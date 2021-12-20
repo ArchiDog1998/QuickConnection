@@ -115,7 +115,7 @@ namespace QuickConnection
 
             if (!dict.TryGetValue(guid, out CreateObjectItem[] objItems)) objItems = new CreateObjectItem[0];
             Image objImage = CreateHeader(param.Icon_24x24);
-            objImage.MouseRightButtonUp += (sender, e) =>
+            ObjectTitle.MouseRightButtonUp += (sender, e) =>
             {
                 Menu_EditItemClicked(objItems, param.ComponentGuid, param, isInput);
             };
@@ -130,7 +130,7 @@ namespace QuickConnection
                     IGH_ObjectProxy proxy = Instances.ComponentServer.EmitObjectProxy(new Guid("59daf374-bc21-4a5e-8282-5504fb7ae9ae"));
                     Image image = CreateHeader(proxy.Icon);
 
-                    image.MouseRightButtonUp += (sender, e) =>
+                    ListTitle.MouseRightButtonUp += (sender, e) =>
                     {
                         ObservableCollection<CreateObjectItem> structureLists = new ObservableCollection<CreateObjectItem>(QuickConnectionAssemblyLoad.StaticCreateObjectItems.ListItems);
 
@@ -151,7 +151,7 @@ namespace QuickConnection
                 {
                     GH_GraftTreeComponent tree = new GH_GraftTreeComponent();
                     Image image = CreateHeader(tree.Icon_24x24);
-                    image.MouseRightButtonUp += (sender, e) =>
+                    TreeTitle.MouseRightButtonUp += (sender, e) =>
                     {
                         ObservableCollection<CreateObjectItem> structureLists = new ObservableCollection<CreateObjectItem>(QuickConnectionAssemblyLoad.StaticCreateObjectItems.TreeItems);
                         new QuickConnectionEditor(isInput, tree.Icon_24x24, "Tree", structureLists, (par) => par.Access == GH_ParamAccess.tree && par is Param_GenericObject,
@@ -165,6 +165,10 @@ namespace QuickConnection
                     TreeList.ItemsSource = QuickConnectionAssemblyLoad.StaticCreateObjectItems.TreeItems;
                 }
                 else TreeTitle.Visibility = Visibility.Collapsed;
+            } else
+            {
+                ListTitle.Visibility = Visibility.Collapsed;
+                TreeTitle.Visibility = Visibility.Collapsed;
             }
 
             //Curve
@@ -174,7 +178,7 @@ namespace QuickConnection
                 Param_Curve par = new Param_Curve();
                 Image image = CreateHeader(par.Icon_24x24);
                 if (!dict.TryGetValue(par.ComponentGuid, out CreateObjectItem[] items)) items = new CreateObjectItem[0];
-                image.MouseRightButtonUp += (sender, e) =>
+                CurveTitle.MouseRightButtonUp += (sender, e) =>
                 {
                     Menu_EditItemClicked(items, par.ComponentGuid, param, isInput);
                 };
@@ -189,7 +193,7 @@ namespace QuickConnection
                 Param_Brep par = new Param_Brep();
                 Image image = CreateHeader(par.Icon_24x24);
                 if (!dict.TryGetValue(par.ComponentGuid, out CreateObjectItem[] items)) items = new CreateObjectItem[0];
-                image.MouseRightButtonUp += (sender, e) =>
+                BrepTitle.MouseRightButtonUp += (sender, e) =>
                 {
                     Menu_EditItemClicked(items, par.ComponentGuid, param, isInput);
                 };
@@ -207,7 +211,7 @@ namespace QuickConnection
                 Param_Geometry par = new Param_Geometry();
                 Image image = CreateHeader(par.Icon_24x24);
                 if (!dict.TryGetValue(par.ComponentGuid, out CreateObjectItem[] items)) items = new CreateObjectItem[0];
-                image.MouseRightButtonUp += (sender, e) =>
+                GeoTitle.MouseRightButtonUp += (sender, e) =>
                 {
                     Menu_EditItemClicked(items, par.ComponentGuid, param, isInput);
                 };
@@ -222,7 +226,7 @@ namespace QuickConnection
                 Param_GenericObject par = new Param_GenericObject();
                 Image image = CreateHeader(par.Icon_24x24);
                 if (!dict.TryGetValue(par.ComponentGuid, out CreateObjectItem[] items)) items = new CreateObjectItem[0];
-                image.MouseRightButtonUp += (sender, e) =>
+                GeneralTitle.MouseRightButtonUp += (sender, e) =>
                 {
                     Menu_EditItemClicked(items, par.ComponentGuid, param, isInput);
                 };
@@ -271,19 +275,6 @@ namespace QuickConnection
                 }).Show();
         }
 
-        private void Image_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            Image image = (Image)sender;
-            if (image == null) return;
-
-            CreateObjectItem cItem = (CreateObjectItem)image.DataContext;
-            if(cItem == null) return;
-
-            QuickConnectionAssemblyLoad.CloseWireEvent();
-            cItem.CreateObject(_owner, _position);
-            this.Close();
-        }
-
         protected override void OnDeactivated(EventArgs e)
         {
             try
@@ -308,6 +299,20 @@ namespace QuickConnection
             QuickConnectionAssemblyLoad.QuickConnectionWindowWidth = Width;
             QuickConnectionAssemblyLoad.QuickConnectionWindowHeight = Height;
             base.OnClosed(e);
+        }
+
+        private void SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ListBox listBox = sender as ListBox;
+            if (listBox == null) return;
+
+            CreateObjectItem cItem = (CreateObjectItem)listBox.SelectedItem;
+
+            if (cItem == null) return;
+
+            QuickConnectionAssemblyLoad.CloseWireEvent();
+            cItem.CreateObject(_owner, _position);
+            this.Close();
         }
     }
 }

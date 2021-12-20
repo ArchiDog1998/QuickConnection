@@ -27,12 +27,13 @@
         <Style TargetType="ListBox" x:Key="BoxStyle">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
-
+            <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
+            <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
             <Setter Property="ItemTemplate">
                 <Setter.Value>
                     <DataTemplate>
                         <Image Source="{Binding Icon, Mode=OneWay, Converter={StaticResource BitmapConverter}}" Width="24" Height="24"
-                                   MouseUp="Image_MouseUp" ToolTip="{Binding ShowName}"/>
+                               ToolTip="{Binding ShowName}"/>
                     </DataTemplate>
                 </Setter.Value>
             </Setter>
@@ -63,31 +64,31 @@
             </SolidColorBrush>
         </TabControl.Background>
         <TabItem x:Name="ObjectTitle">
-            <ListBox x:Name="ObjectList"/>
+            <ListBox x:Name="ObjectList" SelectionChanged="SelectionChanged"/>
         </TabItem>
 
         <TabItem x:Name="CurveTitle">
-            <ListBox x:Name="CurveList"/>
+            <ListBox x:Name="CurveList" SelectionChanged="SelectionChanged"/>
         </TabItem>
 
         <TabItem x:Name="BrepTitle">
-            <ListBox x:Name="BrepList"/>
+            <ListBox x:Name="BrepList" SelectionChanged="SelectionChanged"/>
         </TabItem>
 
         <TabItem x:Name="GeoTitle">
-            <ListBox x:Name="GeoList"/>
+            <ListBox x:Name="GeoList" SelectionChanged="SelectionChanged"/>
         </TabItem>
 
         <TabItem x:Name="GeneralTitle">
-            <ListBox x:Name="GeneralList"/>
+            <ListBox x:Name="GeneralList" SelectionChanged="SelectionChanged"/>
         </TabItem>
 
         <TabItem x:Name="ListTitle">
-            <ListBox x:Name="ListList"/>
+            <ListBox x:Name="ListList" SelectionChanged="SelectionChanged"/>
         </TabItem>
 
         <TabItem x:Name="TreeTitle">
-            <ListBox x:Name="TreeList"/>
+            <ListBox x:Name="TreeList" SelectionChanged="SelectionChanged"/>
         </TabItem>
     </TabControl>
 </Window>
