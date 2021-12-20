@@ -34,7 +34,7 @@ namespace QuickConnection
 
             Icon = proxy.Icon;
             Name = proxy.Desc.Name;
-            ShowName = $"{proxy.Desc.Name}[{index}]";
+            ShowName = $"{proxy.Desc.Name}[{index}]\nInitString: {init}";
         }
 
         public CreateObjectItem(CreateObjectItemSave save, bool isInput):this(save.ObjectGuid, save.Index, save.initString, isInput)

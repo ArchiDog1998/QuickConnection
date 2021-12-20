@@ -22,6 +22,9 @@ namespace QuickConnection
 {
     public class QuickConnectionAssemblyLoad : GH_AssemblyPriority
     {
+
+
+
         private static readonly string _location = Path.Combine(Folders.SettingsFolder, "quickwires.json");
 
         private static GH_WireInteraction _wire = null;
@@ -36,6 +39,18 @@ namespace QuickConnection
         {
             get => Instances.Settings.GetValue(nameof(UseQuickConnection), true);
             set => Instances.Settings.SetValue(nameof(UseQuickConnection), value);
+        }
+
+        public static double QuickConnectionWindowWidth
+        {
+            get => Instances.Settings.GetValue(nameof(QuickConnectionWindowWidth), 200.0);
+            set => Instances.Settings.SetValue(nameof(QuickConnectionWindowWidth), value);
+        }
+
+        public static double QuickConnectionWindowHeight
+        {
+            get => Instances.Settings.GetValue(nameof(QuickConnectionWindowHeight), 200.0);
+            set => Instances.Settings.SetValue(nameof(QuickConnectionWindowHeight), value);
         }
 
         internal static void SaveToJson()
@@ -108,6 +123,20 @@ namespace QuickConnection
             //Binding to respond.
             Instances.ActiveCanvas.MouseDown += ActiveCanvas_MouseDown;
             Instances.ActiveCanvas.MouseUp += ActiveCanvas_MouseUp;
+
+            ToolStrip _canvasToolbar = editor.Controls[0].Controls[1] as ToolStrip;
+
+            ToolStripSeparator toolStripSeparator = new ToolStripSeparator();
+            toolStripSeparator.Margin = new Padding(2, 0, 2, 0);
+            toolStripSeparator.Size = new Size(6, 40);
+            _canvasToolbar.Items.Add(toolStripSeparator);
+
+            ToolStripButton button = new ToolStripButton(Properties.Resources.QuickwireIcon_24) { Checked = UseQuickConnection, ToolTipText = "Use Quick Connection" };
+            button.Click += (sender, e) =>
+            {
+                UseQuickConnection = button.Checked = !button.Checked;
+            };
+            _canvasToolbar.Items.Add(button);
         }
 
 
@@ -138,13 +167,29 @@ namespace QuickConnection
                 Instances.ActiveCanvas.CanvasPostPaintOverlay += ActiveCanvas_CanvasPostPaintOverlay;
                 Instances.ActiveCanvas.Refresh();
 
-                RespondToQuickWire(source, source.ComponentGuid, (bool)_fromInputInfo.GetValue(_wire), mousePointCanvas).Show(
-                    Instances.ActiveCanvas, e.Location);
+
+
+                Point clickLocation = Instances.ActiveCanvas.PointToScreen(e.Location);
+
+                ChooseWindow choose = new ChooseWindow(source, (bool)_fromInputInfo.GetValue(_wire), mousePointCanvas);
+                choose.WindowStartupLocation = System.Windows.WindowStartupLocation.Manual;
+                choose.Left = clickLocation.X;
+                choose.Top = clickLocation.Y;
+                choose.Width = QuickConnectionWindowWidth;
+                choose.Height = QuickConnectionWindowHeight;
+                choose.Show();
             }
             else
             {
                 _wire = null;
             }
+        }
+
+        public static void CloseWireEvent()
+        {
+            Instances.ActiveCanvas.CanvasPostPaintOverlay -= ActiveCanvas_CanvasPostPaintOverlay;
+            _wire = null;
+            Instances.ActiveCanvas.Refresh();
         }
 
         private static float DistanceTo(PointF a, PointF b)

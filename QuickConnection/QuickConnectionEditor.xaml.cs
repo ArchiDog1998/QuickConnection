@@ -150,7 +150,7 @@ namespace QuickConnection
             _canvas.MouseMove += _canvas_MouseMove;
             _canvas.MouseLeave += _canvas_MouseLeave;
             _canvas.CanvasPostPaintWidgets += CanvasPostPaintWidgets;
-           // BaseControlItem.ShouldRespond = false;
+            _canvas.ModifiersEnabled = false;
             _canvas.Refresh();
         }
 
@@ -174,7 +174,7 @@ namespace QuickConnection
             _canvas.MouseMove -= _canvas_MouseMove;
             _canvas.CanvasPostPaintWidgets -= CanvasPostPaintWidgets;
             Instances.CursorServer.ResetCursor(_canvas);
-            //BaseControlItem.ShouldRespond = true;
+            _canvas.ModifiersEnabled = true;
             _canvas.Refresh();
         }
 
@@ -351,14 +351,10 @@ namespace QuickConnection
     [ValueConversion(typeof(System.Drawing.Bitmap), typeof(BitmapImage))]
     public class BitmapConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public static BitmapImage ToImageSource(Bitmap bitmap)
         {
-            if (value == null) return null;
-
-            System.Drawing.Bitmap picture = (System.Drawing.Bitmap)value;
-
             MemoryStream ms = new MemoryStream();
-            picture.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+            bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
             BitmapImage image = new BitmapImage();
 
             image.BeginInit();
@@ -366,6 +362,14 @@ namespace QuickConnection
             image.StreamSource = ms;
             image.EndInit();
             return image;
+        }
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value == null) return null;
+
+            System.Drawing.Bitmap picture = (System.Drawing.Bitmap)value;
+            return ToImageSource(picture);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
