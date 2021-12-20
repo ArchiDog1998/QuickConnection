@@ -7,7 +7,7 @@ namespace QuickConnection
 {
     public class QuickConnectionInfo : GH_AssemblyInfo
     {
-        public override string Name => "QuickConnection";
+        public override string Name => "Quick Connection";
 
         //Return a 24x24 pixel bitmap to represent this GHA library.
         public override Bitmap Icon => null;
