@@ -146,6 +146,11 @@ namespace QuickConnection
 
         private void AddButton_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            _canvas.MouseUp -= _canvas_MouseUp;
+            _canvas.MouseLeave -= _canvas_MouseLeave;
+            _canvas.MouseMove -= _canvas_MouseMove;
+            _canvas.CanvasPostPaintWidgets -= CanvasPostPaintWidgets;
+
             _canvas.MouseUp += _canvas_MouseUp;
             _canvas.MouseMove += _canvas_MouseMove;
             _canvas.MouseLeave += _canvas_MouseLeave;
