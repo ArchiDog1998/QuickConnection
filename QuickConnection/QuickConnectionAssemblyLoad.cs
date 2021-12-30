@@ -23,39 +23,16 @@ namespace QuickConnection
 {
     public class QuickConnectionAssemblyLoad : GH_AssemblyPriority
     {
-
-
-
         private static readonly string _location = Path.Combine(Folders.SettingsFolder, "quickwires.json");
 
-        private static GH_WireInteraction _wire = null;
-        private static readonly FieldInfo _sourceInfo = typeof(GH_WireInteraction).GetRuntimeFields().Where(m => m.Name.Contains("m_source")).First();
-        private static readonly FieldInfo _targetInfo = typeof(GH_WireInteraction).GetRuntimeFields().Where(m => m.Name.Contains("m_target")).First();
-        private static readonly FieldInfo _fromInputInfo = typeof(GH_WireInteraction).GetRuntimeFields().Where(m => m.Name.Contains("m_dragfrominput")).First();
-        private static readonly MethodInfo _paintOverlay = typeof(GH_WireInteraction).GetRuntimeMethods().Where(m => m.Name.Contains("Canvas_DrawOverlay")).First();
 
-        internal static CreateObjectItems StaticCreateObjectItems;
+        internal static CreateObjectItems StaticCreateObjectItems = new CreateObjectItems();
 
         public static bool UseQuickConnection
         {
             get => Instances.Settings.GetValue(nameof(UseQuickConnection), true);
             set => Instances.Settings.SetValue(nameof(UseQuickConnection), value);
         }
-
-        private static float _screenScale = 0f;
-
-        public static float screenScale
-        {
-            get
-            {
-                if(_screenScale ==0f)
-                {
-                    _screenScale = Graphics.FromHwnd(IntPtr.Zero).DpiX / 96;
-                }
-                return _screenScale;
-            }
-        }
-
 
         public static double QuickConnectionWindowWidth
         {
@@ -69,6 +46,7 @@ namespace QuickConnection
             set => Instances.Settings.SetValue(nameof(QuickConnectionWindowHeight), value);
         }
 
+        #region Json Edit
         internal static void SaveToJson()
         {
             JavaScriptSerializer ser = new JavaScriptSerializer();
@@ -82,6 +60,12 @@ namespace QuickConnection
             StaticCreateObjectItems = new CreateObjectItems();
         }
 
+        internal static void ResetToDefaultQuiceWIreSettings(bool isCoreOnly)
+        {
+            StaticCreateObjectItems.CreateDefaultStyle(isCoreOnly);
+            SaveToJson();
+        }
+        #endregion
         public override GH_LoadingInstruction PriorityLoad()
         {
             Instances.CanvasCreated += Instances_CanvasCreated;
@@ -119,17 +103,16 @@ namespace QuickConnection
             //Read from json.
             try
             {
-                string jsonStr;
                 if (File.Exists(_location))
                 {
-                    jsonStr = File.ReadAllText(_location);
+                    string jsonStr = File.ReadAllText(_location);
+                    JavaScriptSerializer ser = new JavaScriptSerializer();
+                    StaticCreateObjectItems = new CreateObjectItems(ser.Deserialize<CreateObjectItemsSave>(jsonStr));
                 }
                 else
                 {
-                    jsonStr = Properties.Resources.quickwires;
+                    StaticCreateObjectItems.CreateDefaultStyle(true);
                 }
-                JavaScriptSerializer ser = new JavaScriptSerializer();
-                StaticCreateObjectItems = new CreateObjectItems(ser.Deserialize<CreateObjectItemsSave>(jsonStr));
             }
             catch (Exception ex)
             {
@@ -138,7 +121,6 @@ namespace QuickConnection
 
             //Binding to respond.
             Instances.ActiveCanvas.MouseDown += ActiveCanvas_MouseDown;
-            Instances.ActiveCanvas.MouseUp += ActiveCanvas_MouseUp;
 
             ToolStrip _canvasToolbar = editor.Controls[0].Controls[1] as ToolStrip;
 
@@ -155,326 +137,17 @@ namespace QuickConnection
             _canvasToolbar.Items.Add(button);
         }
 
-
-        #region QuickConnection Respound
-
         private static void ActiveCanvas_MouseDown(object sender, MouseEventArgs e)
         {
-            if (_wire != null) return;
             if (UseQuickConnection && e.Button == MouseButtons.Left)
             {
                 IGH_MouseInteraction activeInteraction = Instances.ActiveCanvas.ActiveInteraction;
                 if (activeInteraction != null && activeInteraction is GH_WireInteraction)
                 {
-                    _wire = (GH_WireInteraction)activeInteraction;
+                    Instances.ActiveCanvas.ActiveInteraction = new GH_AdvancedWireInteraction(activeInteraction.Owner,
+                        new GH_CanvasMouseEvent(activeInteraction.Owner.Viewport, e), (IGH_Param)GH_AdvancedWireInteraction._sourceInfo.GetValue(activeInteraction));
                 }
             }
         }
-
-        private static void ActiveCanvas_MouseUp(object sender, MouseEventArgs e)
-        {
-            if (_wire == null) return;
-            PointF mousePointCanvas = Instances.ActiveCanvas.Viewport.UnprojectPoint(e.Location);
-            IGH_Param source = (IGH_Param)_sourceInfo.GetValue(_wire);
-
-            if (UseQuickConnection && e.Button == MouseButtons.Left && _targetInfo.GetValue(_wire) == null && !source.Attributes.GetTopLevel.Bounds.Contains(mousePointCanvas)
-                && DistanceTo(mousePointCanvas, _wire.CanvasPointDown) > 20)
-            {
-                Instances.ActiveCanvas.CanvasPostPaintOverlay += ActiveCanvas_CanvasPostPaintOverlay;
-                Instances.ActiveCanvas.Refresh();
-
-                Point location = Control.MousePosition;
-
-                new ChooseWindow(source, (bool)_fromInputInfo.GetValue(_wire), mousePointCanvas)
-                {
-                    WindowStartupLocation = System.Windows.WindowStartupLocation.Manual,
-                    Left = location.X / screenScale,
-                    Top = location.Y / screenScale,
-                    Width = QuickConnectionWindowWidth,
-                    Height = QuickConnectionWindowHeight,
-                }.Show();
-            }
-            else
-            {
-                _wire = null;
-            }
-        }
-
-
-
-        public static void CloseWireEvent()
-        {
-            Instances.ActiveCanvas.CanvasPostPaintOverlay -= ActiveCanvas_CanvasPostPaintOverlay;
-            _wire = null;
-            Instances.ActiveCanvas.Refresh();
-        }
-
-        private static float DistanceTo(PointF a, PointF b)
-        {
-            return (float)Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
-        }
-
-        private static void ActiveCanvas_CanvasPostPaintOverlay(GH_Canvas sender)
-        {
-            if (_wire != null)
-                _paintOverlay.Invoke(_wire, new object[] { Instances.ActiveCanvas });
-        }
-
-        //internal static ToolStripDropDownMenu RespondToQuickWire(IGH_Param param, Guid guid, bool isInput, PointF pivot, bool isFirst = true)
-        //{
-        //    SortedList<Guid, CreateObjectItem[]> dict = new SortedList<Guid, CreateObjectItem[]>();
-        //    if (isInput)
-        //    {
-        //        dict = StaticCreateObjectItems.InputItems;
-        //    }
-        //    else
-        //    {
-        //        dict = StaticCreateObjectItems.OutputItems;
-        //    }
-
-        //    //Change Guid.
-        //    if (param is Param_ScriptVariable && guid == new Param_ScriptVariable().ComponentGuid)
-        //    {
-        //        Param_ScriptVariable script = (Param_ScriptVariable)param;
-
-        //        if (script.TypeHint != null)
-        //        {
-        //            if (script.TypeHint is GH_ArcHint)
-        //                guid = new Param_Arc().ComponentGuid;
-        //            else if (script.TypeHint is GH_BooleanHint_CS || script.TypeHint is GH_BooleanHint_VB)
-        //                guid = new Param_Boolean().ComponentGuid;
-        //            else if (script.TypeHint is GH_BoxHint)
-        //                guid = new Param_Box().ComponentGuid;
-        //            else if (script.TypeHint is GH_BrepHint)
-        //                guid = new Param_Brep().ComponentGuid;
-        //            else if (script.TypeHint is GH_CircleHint)
-        //                guid = new Param_Circle().ComponentGuid;
-        //            else if (script.TypeHint is GH_ColorHint)
-        //                guid = new Param_Colour().ComponentGuid;
-        //            else if (script.TypeHint is GH_ComplexHint)
-        //                guid = new Param_Complex().ComponentGuid;
-        //            else if (script.TypeHint is GH_CurveHint)
-        //                guid = new Param_Curve().ComponentGuid;
-        //            else if (script.TypeHint is GH_DateTimeHint)
-        //                guid = new Param_Time().ComponentGuid;
-        //            else if (script.TypeHint is GH_DoubleHint_CS || script.TypeHint is GH_DoubleHint_VB)
-        //                guid = new Param_Number().ComponentGuid;
-        //            else if (script.TypeHint is GH_GeometryBaseHint)
-        //                guid = new Param_Geometry().ComponentGuid;
-        //            else if (script.TypeHint is GH_GuidHint)
-        //                guid = new Param_Guid().ComponentGuid;
-        //            else if (script.TypeHint is GH_IntegerHint_CS || script.TypeHint is GH_IntegerHint_VB)
-        //                guid = new Param_Integer().ComponentGuid;
-        //            else if (script.TypeHint is GH_IntervalHint)
-        //                guid = new Param_Interval().ComponentGuid;
-        //            else if (script.TypeHint is GH_LineHint)
-        //                guid = new Param_Line().ComponentGuid;
-        //            else if (script.TypeHint is GH_MeshHint)
-        //                guid = new Param_Mesh().ComponentGuid;
-        //            else if (script.TypeHint is GH_NullHint)
-        //                guid = new Param_GenericObject().ComponentGuid;
-        //            else if (script.TypeHint is GH_PlaneHint)
-        //                guid = new Param_Plane().ComponentGuid;
-        //            else if (script.TypeHint is GH_Point3dHint)
-        //                guid = new Param_Point().ComponentGuid;
-        //            else if (script.TypeHint is GH_PolylineHint)
-        //                guid = new Param_Curve().ComponentGuid;
-        //            else if (script.TypeHint is GH_Rectangle3dHint)
-        //                guid = new Param_Rectangle().ComponentGuid;
-        //            else if (script.TypeHint is GH_StringHint_CS || script.TypeHint is GH_StringHint_VB)
-        //                guid = new Param_String().ComponentGuid;
-        //            else if (script.TypeHint?.TypeName == "SubD")
-        //                guid = new Guid("{89CD1A12-0007-4581-99BA-66578665E610}");
-        //            else if (script.TypeHint is GH_SurfaceHint)
-        //                guid = new Param_Surface().ComponentGuid;
-        //            else if (script.TypeHint is GH_TransformHint)
-        //                guid = new Param_Transform().ComponentGuid;
-        //            else if (script.TypeHint is GH_UVIntervalHint)
-        //                guid = new Param_Interval2D().ComponentGuid;
-        //            else if (script.TypeHint is GH_Vector3dHint)
-        //                guid = new Param_Vector().ComponentGuid;
-        //        }
-
-        //    }
-
-        //    CreateObjectItem[] items = new CreateObjectItem[0];
-        //    if (dict.ContainsKey(guid))
-        //    {
-        //        items = dict[guid];
-        //    }
-
-        //    ToolStripDropDownMenu menu = new ToolStripDropDownMenu() { MaximumSize = new Size(500, 700) };
-
-        //    if (isFirst)
-        //    {
-
-        //        if (param.VolatileDataCount > 1 && !isInput)
-        //        {
-        //            IGH_ObjectProxy proxy = Instances.ComponentServer.EmitObjectProxy(new Guid("59daf374-bc21-4a5e-8282-5504fb7ae9ae"));
-
-        //            ToolStripMenuItem listItem = GH_DocumentObject.Menu_AppendItem(menu, "List");
-        //            listItem.Image = proxy.Icon;
-        //            CreateQuickWireMenu(listItem.DropDown, StaticCreateObjectItems.ListItems, param, pivot, (sender, e) =>
-        //            {
-        //                ToolStripMenuItem toolStripMenuItem = sender as ToolStripMenuItem;
-
-        //                if (toolStripMenuItem != null && toolStripMenuItem.Tag != null && toolStripMenuItem.Tag is CreateObjectItem[])
-        //                {
-        //                    ObservableCollection<CreateObjectItem> structureLists = new ObservableCollection<CreateObjectItem>((CreateObjectItem[])toolStripMenuItem.Tag);
-        //                    new QuickConnectionEditor(isInput, proxy.Icon, "List", structureLists, (par) => par.Access == GH_ParamAccess.list && par is Param_GenericObject,
-        //                        (arr, isIn) =>
-        //                        {
-        //                            StaticCreateObjectItems.ListItems = arr;
-
-        //                        }).Show();
-        //                }
-        //            });
-
-        //            if (param.VolatileData.PathCount > 1)
-        //            {
-        //                GH_GraftTreeComponent tree = new GH_GraftTreeComponent();
-        //                ToolStripMenuItem treeItem = GH_DocumentObject.Menu_AppendItem(menu, "Tree");
-        //                treeItem.Image = tree.Icon_24x24;
-        //                CreateQuickWireMenu(treeItem.DropDown, StaticCreateObjectItems.TreeItems, param, pivot, (sender, e) =>
-        //                {
-        //                    ToolStripMenuItem toolStripMenuItem = sender as ToolStripMenuItem;
-
-        //                    if (toolStripMenuItem != null && toolStripMenuItem.Tag != null && toolStripMenuItem.Tag is CreateObjectItem[])
-        //                    {
-        //                        ObservableCollection<CreateObjectItem> structureLists = new ObservableCollection<CreateObjectItem>((CreateObjectItem[])toolStripMenuItem.Tag);
-        //                        new QuickConnectionEditor(isInput, tree.Icon_24x24, "Tree", structureLists, (par) => par.Access == GH_ParamAccess.tree && par is Param_GenericObject,
-        //                            (arr, isIn) =>
-        //                            {
-        //                                StaticCreateObjectItems.TreeItems = arr;
-
-        //                            }).Show();
-        //                    }
-        //                });
-        //            }
-        //        }
-
-
-        //        //Curve
-        //        if (guid == new Param_Rectangle().ComponentGuid || guid == new Param_Circle().ComponentGuid || guid == new Param_Arc().ComponentGuid
-        //            || guid == new Param_Line().ComponentGuid)
-        //        {
-        //            Param_Curve curve = new Param_Curve();
-        //            ToolStripMenuItem item = GH_DocumentObject.Menu_AppendItem(menu, curve.Name);
-        //            item.Image = curve.Icon_24x24;
-        //            item.DropDown = RespondToQuickWire(param, curve.ComponentGuid, isInput, pivot, false);
-        //        }
-
-        //        //Brep
-        //        if (guid == new Param_Surface().ComponentGuid || guid == new Guid("{89CD1A12-0007-4581-99BA-66578665E610}"))
-        //        {
-        //            Param_Brep brep = new Param_Brep();
-        //            ToolStripMenuItem item = GH_DocumentObject.Menu_AppendItem(menu, brep.Name);
-        //            item.Image = brep.Icon_24x24;
-        //            item.DropDown = RespondToQuickWire(param, brep.ComponentGuid, isInput, pivot, false);
-        //        }
-
-        //        //Geometry
-        //        if (guid == new Param_Rectangle().ComponentGuid || guid == new Param_Circle().ComponentGuid || guid == new Param_Arc().ComponentGuid || guid == new Param_Line().ComponentGuid
-        //            || guid == new Param_Point().ComponentGuid || guid == new Param_Plane().ComponentGuid || guid == new Param_Vector().ComponentGuid
-        //            || guid == new Param_Curve().ComponentGuid || guid == new Param_Surface().ComponentGuid || guid == new Param_Brep().ComponentGuid || guid == new Param_Group().ComponentGuid
-        //            || guid == new Param_Mesh().ComponentGuid || guid == new Guid("{89CD1A12-0007-4581-99BA-66578665E610}") || guid == new Param_Box().ComponentGuid)
-        //        {
-        //            Param_Geometry geo = new Param_Geometry();
-        //            ToolStripMenuItem item = GH_DocumentObject.Menu_AppendItem(menu, geo.Name);
-        //            item.Image = geo.Icon_24x24;
-        //            item.DropDown = RespondToQuickWire(param, geo.ComponentGuid, isInput, pivot, false);
-        //        }
-
-        //        //General
-        //        if (guid != new Param_GenericObject().ComponentGuid)
-        //        {
-        //            Param_GenericObject general = new Param_GenericObject();
-        //            ToolStripMenuItem item = GH_DocumentObject.Menu_AppendItem(menu, general.Name);
-        //            item.Image = general.Icon_24x24;
-        //            item.DropDown = RespondToQuickWire(param, general.ComponentGuid, isInput, pivot, false);
-        //        }
-        //        GH_DocumentObject.Menu_AppendSeparator(menu);
-        //    }
-
-        //    CreateQuickWireMenu(menu, items, param, pivot, (sender, e) => Menu_EditItemClicked(sender, guid, param, isInput));
-        //    menu.Closed += (sender, e) =>
-        //    {
-        //        if (e.CloseReason == ToolStripDropDownCloseReason.AppFocusChange) return;
-        //        Instances.ActiveCanvas.CanvasPostPaintOverlay -= ActiveCanvas_CanvasPostPaintOverlay;
-        //        _wire = null;
-        //        Instances.ActiveCanvas.Refresh();
-        //    };
-
-        //    return menu;
-        //}
-
-        //private static void CreateQuickWireMenu(ToolStrip menu, CreateObjectItem[] items, IGH_Param param, PointF pivot, EventHandler click)
-        //{
-        //    foreach (CreateObjectItem createItem in items)
-        //    {
-        //        ToolStripMenuItem item = GH_DocumentObject.Menu_AppendItem(menu, createItem.ShowName, (sender, e) => Menu_CreateItemClicked(sender, param, pivot), createItem.Icon);
-        //        item.Tag = createItem;
-        //        if (!string.IsNullOrEmpty(createItem.InitString))
-        //        {
-        //            item.ToolTipText = $"Init String:\n{createItem.InitString}";
-        //        }
-        //        else
-        //        {
-        //            item.ToolTipText = "No Init String.";
-        //        }
-        //    }
-        //    ToolStripMenuItem editItem = GH_DocumentObject.Menu_AppendItem(menu, "Edit", click);
-        //    editItem.Image = Properties.Resources.EditIcon_24;
-        //    editItem.Tag = items;
-        //    editItem.ForeColor = Color.DimGray;
-        //}
-
-        //private static void Menu_CreateItemClicked(object sender, IGH_Param param, PointF pivot)
-        //{
-        //    ToolStripMenuItem toolStripMenuItem = sender as ToolStripMenuItem;
-        //    if (toolStripMenuItem != null && toolStripMenuItem.Tag != null && toolStripMenuItem.Tag is CreateObjectItem)
-        //    {
-        //        CreateObjectItem createItem = (CreateObjectItem)toolStripMenuItem.Tag;
-        //        createItem.CreateObject(param, pivot);
-        //        return;
-        //    }
-        //    MessageBox.Show("Something wrong with create object.");
-        //}
-
-
-        //private static void Menu_EditItemClicked(object sender, Guid guid, IGH_Param param, bool isInput)
-        //{
-        //    ToolStripMenuItem toolStripMenuItem = sender as ToolStripMenuItem;
-
-        //    string name;
-        //    Bitmap icon;
-        //    IGH_ObjectProxy proxy = Instances.ComponentServer.EmitObjectProxy(guid);
-        //    if (proxy == null)
-        //    {
-        //        name = param.Name;
-        //        icon = param.Icon_24x24;
-        //    }
-        //    else
-        //    {
-        //        name = proxy.Desc.Name;
-        //        icon = proxy.Icon;
-        //    }
-
-        //    if (toolStripMenuItem != null && toolStripMenuItem.Tag != null && toolStripMenuItem.Tag is CreateObjectItem[])
-        //    {
-        //        ObservableCollection<CreateObjectItem> structureLists = new ObservableCollection<CreateObjectItem>((CreateObjectItem[])toolStripMenuItem.Tag);
-        //        new QuickConnectionEditor(isInput, icon, name, structureLists, (par) => par.ComponentGuid == guid,
-        //            (arr, isIn) =>
-        //            {
-        //                if (isIn)
-        //                    StaticCreateObjectItems.InputItems[guid] = arr;
-        //                else
-        //                    StaticCreateObjectItems.OutputItems[guid] = arr;
-
-        //            }).Show();
-        //    }
-        //}
-
-        #endregion
     }
 }

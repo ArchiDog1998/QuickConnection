@@ -41,13 +41,14 @@
             <Setter Property="ItemsPanel">
                 <Setter.Value>
                     <ItemsPanelTemplate>
-                        <WrapPanel IsItemsHost="True" Orientation="Horizontal"  />
+                        <WrapPanel IsItemsHost="True" Orientation="Horizontal"/>
                     </ItemsPanelTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
         <Style TargetType="ListBox" BasedOn="{StaticResource BoxStyle}"/>
+
     </Window.Resources>
 
     <TabControl>

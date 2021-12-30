@@ -1,4 +1,5 @@
 ﻿using Grasshopper.GUI.Canvas;
+using Grasshopper.GUI.Ribbon;
 using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
@@ -11,10 +12,10 @@ using System.Threading.Tasks;
 
 namespace QuickConnection
 {
-    public class CreateObjectItem
+    public class CreateObjectItem : IComparable<CreateObjectItem>
     {
         public static MethodInfo functions = typeof(GH_Canvas).GetRuntimeMethods().Where(m => m.Name.Contains("InstantiateNewObject") && !m.IsPublic).First();
-
+        private static readonly List<GH_RibbonTab> tabs = ((GH_Ribbon)Grasshopper.Instances.DocumentEditor.Controls[3]).Tabs;
         public ushort Index { get; }
         public Guid ObjectGuid { get; }
         public string InitString { get; set; }
@@ -22,6 +23,8 @@ namespace QuickConnection
         public string ShowName { get; } = "Not Found";
         public string Name { get; } = "Not Found";
         public bool IsInput { get; }
+
+        private bool isCoreLibrary = false;
         public CreateObjectItem(Guid guid, ushort index, string init, bool isInput)
         {
             ObjectGuid = guid;
@@ -32,9 +35,17 @@ namespace QuickConnection
             IGH_ObjectProxy proxy = Grasshopper.Instances.ComponentServer.EmitObjectProxy(guid);
             if(proxy == null) return;
 
+            foreach (var assembly in Grasshopper.Instances.ComponentServer.Libraries)
+            {
+                if (proxy.LibraryGuid == assembly.Id)
+                {
+                    isCoreLibrary = assembly.IsCoreLibrary;
+                    break;
+                }
+            }
             Icon = proxy.Icon;
             Name = proxy.Desc.Name;
-            ShowName = $"{proxy.Desc.Name}[{index}]\nInitString: {init}";
+            ShowName = $"{proxy.Desc.Name}[{index}]\n\nInitString: {init}\n\n" + proxy.Desc.Description;
         }
 
         public CreateObjectItem(CreateObjectItemSave save, bool isInput):this(save.ObjectGuid, save.Index, save.initString, isInput)
@@ -91,6 +102,30 @@ namespace QuickConnection
         public static void AddAObjectToCanvas(IGH_DocumentObject obj, PointF pivot, string init, bool update = false)
         {
             functions.Invoke(Grasshopper.Instances.ActiveCanvas, new object[] { obj, init, pivot, update });
+        }
+
+        public int CompareTo(CreateObjectItem other)
+        {
+            IGH_ObjectProxy thisProxy = Grasshopper.Instances.ComponentServer.EmitObjectProxy(this.ObjectGuid);
+            IGH_ObjectProxy otherProxy = Grasshopper.Instances.ComponentServer.EmitObjectProxy(other.ObjectGuid);
+
+            int compareRound1 = (other.isCoreLibrary).CompareTo(isCoreLibrary);
+
+            if(compareRound1 != 0) return compareRound1;
+
+            if (thisProxy.Desc.HasCategory && otherProxy.Desc.HasCategory)
+            {
+                int compareRound1_1 = thisProxy.Desc.Category.CompareTo(otherProxy.Desc.Category);
+                if (compareRound1_1 != 0) return compareRound1_1;
+            }
+
+            if(thisProxy.Desc.HasSubCategory && otherProxy.Desc.HasSubCategory)
+            {
+                int compareRound2 = thisProxy.Desc.SubCategory.CompareTo(otherProxy.Desc.SubCategory);
+                if (compareRound2 != 0) return compareRound2;
+            }
+
+            return thisProxy.Desc.Name.CompareTo(otherProxy.Desc.Name);
         }
     }
 

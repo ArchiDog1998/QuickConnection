@@ -3,6 +3,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Components;
 using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Parameters.Hints;
+using Grasshopper.Kernel.Special;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -115,14 +116,18 @@ namespace QuickConnection
 
             if (!dict.TryGetValue(guid, out CreateObjectItem[] objItems)) objItems = new CreateObjectItem[0];
             Image objImage = CreateHeader(param.Icon_24x24);
+            ObjectTitle.MouseDoubleClick += (sender, e) =>
+            {
+                Menu_EditItemLeftClicked(param.ComponentGuid, isInput);
+            };
             ObjectTitle.MouseRightButtonUp += (sender, e) =>
             {
-                Menu_EditItemClicked(objItems, param.ComponentGuid, param, isInput);
+                Menu_EditItemRightClicked(objItems, param.ComponentGuid, param, isInput);
             };
             ObjectTitle.Header = objImage;
             ObjectList.ItemsSource = objItems;
 
-            //Tree List Quick Connect
+            //Tree List Tree Quick Connect
             if (!isInput)
             {
                 if (param.VolatileDataCount > 1)
@@ -178,9 +183,13 @@ namespace QuickConnection
                 Param_Curve par = new Param_Curve();
                 Image image = CreateHeader(par.Icon_24x24);
                 if (!dict.TryGetValue(par.ComponentGuid, out CreateObjectItem[] items)) items = new CreateObjectItem[0];
+                CurveTitle.MouseDoubleClick += (sender, e) =>
+                {
+                    Menu_EditItemLeftClicked(param.ComponentGuid, isInput);
+                };
                 CurveTitle.MouseRightButtonUp += (sender, e) =>
                 {
-                    Menu_EditItemClicked(items, par.ComponentGuid, param, isInput);
+                    Menu_EditItemRightClicked(items, par.ComponentGuid, param, isInput);
                 };
                 CurveTitle.Header = image;
                 CurveList.ItemsSource = items;
@@ -193,9 +202,13 @@ namespace QuickConnection
                 Param_Brep par = new Param_Brep();
                 Image image = CreateHeader(par.Icon_24x24);
                 if (!dict.TryGetValue(par.ComponentGuid, out CreateObjectItem[] items)) items = new CreateObjectItem[0];
+                BrepTitle.MouseDoubleClick += (sender, e) =>
+                {
+                    Menu_EditItemLeftClicked(param.ComponentGuid, isInput);
+                };
                 BrepTitle.MouseRightButtonUp += (sender, e) =>
                 {
-                    Menu_EditItemClicked(items, par.ComponentGuid, param, isInput);
+                    Menu_EditItemRightClicked(items, par.ComponentGuid, param, isInput);
                 };
                 BrepTitle.Header = image;
                 BrepList.ItemsSource = items;
@@ -206,14 +219,19 @@ namespace QuickConnection
             if (guid == new Param_Rectangle().ComponentGuid || guid == new Param_Circle().ComponentGuid || guid == new Param_Arc().ComponentGuid || guid == new Param_Line().ComponentGuid
                 || guid == new Param_Point().ComponentGuid || guid == new Param_Plane().ComponentGuid || guid == new Param_Vector().ComponentGuid
                 || guid == new Param_Curve().ComponentGuid || guid == new Param_Surface().ComponentGuid || guid == new Param_Brep().ComponentGuid || guid == new Param_Group().ComponentGuid
-                || guid == new Param_Mesh().ComponentGuid || guid == new Guid("{89CD1A12-0007-4581-99BA-66578665E610}") || guid == new Param_Box().ComponentGuid)
+                || guid == new Param_Mesh().ComponentGuid || guid == new Guid("{89CD1A12-0007-4581-99BA-66578665E610}") || guid == new Param_Box().ComponentGuid 
+                || guid == new GH_GeometryCache().ComponentGuid)
             {
                 Param_Geometry par = new Param_Geometry();
                 Image image = CreateHeader(par.Icon_24x24);
                 if (!dict.TryGetValue(par.ComponentGuid, out CreateObjectItem[] items)) items = new CreateObjectItem[0];
+                GeoTitle.MouseDoubleClick += (sender, e) =>
+                {
+                    Menu_EditItemLeftClicked(param.ComponentGuid, isInput);
+                };
                 GeoTitle.MouseRightButtonUp += (sender, e) =>
                 {
-                    Menu_EditItemClicked(items, par.ComponentGuid, param, isInput);
+                    Menu_EditItemRightClicked(items, par.ComponentGuid, param, isInput);
                 };
                 GeoTitle.Header = image;
                 GeoList.ItemsSource = items;
@@ -226,9 +244,13 @@ namespace QuickConnection
                 Param_GenericObject par = new Param_GenericObject();
                 Image image = CreateHeader(par.Icon_24x24);
                 if (!dict.TryGetValue(par.ComponentGuid, out CreateObjectItem[] items)) items = new CreateObjectItem[0];
+                GeneralTitle.MouseDoubleClick += (sender, e) =>
+                {
+                    Menu_EditItemLeftClicked(param.ComponentGuid, isInput);
+                };
                 GeneralTitle.MouseRightButtonUp += (sender, e) =>
                 {
-                    Menu_EditItemClicked(items, par.ComponentGuid, param, isInput);
+                    Menu_EditItemRightClicked(items, par.ComponentGuid, param, isInput);
                 };
                 GeneralTitle.Header = image;
                 GeneralList.ItemsSource = items;
@@ -237,7 +259,8 @@ namespace QuickConnection
         }
         private Image CreateHeader(Bitmap icon)
         {
-            Image image = new Image() { Source = BitmapConverter.ToImageSource(icon), Width = 16, Height = 16, ToolTip = "Right Click to Edit." };
+            Image image = new Image() { Source = BitmapConverter.ToImageSource(icon), Width = 16, Height = 16, 
+                ToolTip = "Drag to move window, Right Click to Edit, Double Click to the same persistent param as the icon if it is.", };
             image.MouseMove += (sender, e) =>
             {
                 if (e.LeftButton == MouseButtonState.Pressed)
@@ -246,7 +269,35 @@ namespace QuickConnection
             return image;
         }
 
-        private static void Menu_EditItemClicked(CreateObjectItem[] items, Guid guid, IGH_Param param, bool isInput)
+        private void Menu_EditItemLeftClicked(Guid guid, bool isInput)
+        {
+            IGH_DocumentObject obj = Instances.ComponentServer.EmitObject(guid);
+            if (!IsPersistentParam(obj.GetType(), out _)) return;
+            new CreateObjectItem(guid, 0, "", isInput).CreateObject(_owner, _position);
+            this.Close();
+        }
+
+        internal static bool IsPersistentParam(Type type, out Type dataType)
+        {
+            dataType = null;
+            if (type == null)
+            {
+                return false;
+            }
+            else if (type.IsGenericType)
+            {
+                if (type.GetGenericTypeDefinition() == typeof(GH_PersistentParam<>))
+                {
+                    dataType = type.GenericTypeArguments[0];
+                    return true;
+                }
+                else if (type.GetGenericTypeDefinition() == typeof(GH_Param<>))
+                    return false;
+            }
+            return IsPersistentParam(type.BaseType, out dataType);
+        }
+
+        private static void Menu_EditItemRightClicked(CreateObjectItem[] items, Guid guid, IGH_Param param, bool isInput)
         {
 
             string name;
@@ -279,25 +330,28 @@ namespace QuickConnection
         {
             try
             {
-                QuickConnectionAssemblyLoad.CloseWireEvent();
+                Instances.ActiveCanvas.ActiveInteraction = null;
                 this.Close();
             }
             catch { }
         }
 
-        protected override void OnKeyDown(KeyEventArgs e)
+        protected override void OnKeyUp(KeyEventArgs e)
         {
-            if (e.Key == Key.Escape) 
+            if (e.Key == Key.Escape)
             {
-                QuickConnectionAssemblyLoad.CloseWireEvent();
+                Instances.ActiveCanvas.ActiveInteraction = null;
                 Close();
+                return;
             }
+            base.OnKeyUp(e);
         }
 
         protected override void OnClosed(EventArgs e)
         {
             QuickConnectionAssemblyLoad.QuickConnectionWindowWidth = Width;
             QuickConnectionAssemblyLoad.QuickConnectionWindowHeight = Height;
+            GH_AdvancedWireInteraction._lastCanvasLoacation = PointF.Empty;
             base.OnClosed(e);
         }
 
@@ -310,9 +364,25 @@ namespace QuickConnection
 
             if (cItem == null) return;
 
-            QuickConnectionAssemblyLoad.CloseWireEvent();
+            Instances.ActiveCanvas.ActiveInteraction = null;
             cItem.CreateObject(_owner, _position);
             this.Close();
+        }
+    }
+    /// <summary>
+    /// New Line Object for Wrap Panel.
+    /// </summary>
+    public class NewLine : FrameworkElement
+    {
+        public NewLine()
+        {
+            Height = 0;
+            var binding = new Binding
+            {
+                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(WrapPanel), 1),
+                Path = new PropertyPath("ActualWidth")
+            };
+            BindingOperations.SetBinding(this, WidthProperty, binding);
         }
     }
 }
