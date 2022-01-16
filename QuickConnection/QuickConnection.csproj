@@ -2,7 +2,7 @@
 	
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <Version>0.9.1</Version>
+    <Version>0.9.2</Version>
     <Title>QuickConnection</Title>
     <Description>Description of QuickConnection</Description>
     <TargetExt>.gha</TargetExt>

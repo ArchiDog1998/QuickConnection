@@ -142,7 +142,7 @@ namespace QuickConnection
                 UseQuickConnection = button.Checked = major.Checked = !major.Checked;
             };
 
-            //Add three function for set the default library.
+            #region Add three function for set the default library.
             major.DropDownItems.Add(new ToolStripMenuItem("Set Core Only Library", null, (sender, e) => new Thread(() => 
             { 
                 StaticCreateObjectItems.CreateDefaultStyle(true);
@@ -161,6 +161,7 @@ namespace QuickConnection
                 SaveToJson();
             })
             { ToolTipText = "Clear the Library." });
+            #endregion
 
             _canvasToolbar.Items.Add(button);
             ((ToolStripMenuItem)editor.MainMenuStrip.Items[3]).DropDownItems.Insert(3, major);
