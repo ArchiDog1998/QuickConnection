@@ -84,7 +84,7 @@ namespace QuickConnection
                 if (isCoreOnly)
                 {
                     bool isCore = false;
-                    foreach (var assembly in Grasshopper.Instances.ComponentServer.Libraries)
+                    foreach (var assembly in Instances.ComponentServer.Libraries)
                     {
                         if (proxy.LibraryGuid == assembly.Id)
                         {
@@ -246,13 +246,11 @@ namespace QuickConnection
                         {
                             storedItems.Add(new CreateObjectItem(obj.ComponentGuid, 0, "", false));
                             outputItems[dataType.GUID] = storedItems;
-
                         }
                     }
 
                     if (param.Attributes.HasOutputGrip)
                     {
-
                         outputRemap[param.ComponentGuid] = dataType.GUID;
 
                         if (!inputItems.TryGetValue(dataType.GUID, out List<CreateObjectItem> storedItems))
@@ -273,7 +271,6 @@ namespace QuickConnection
                         {
                             storedItems.Add(new CreateObjectItem(obj.ComponentGuid, 0, "", true));
                             inputItems[dataType.GUID] = storedItems;
-
                         }
                     }
                 }

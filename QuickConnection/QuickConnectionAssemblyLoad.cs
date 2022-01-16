@@ -15,6 +15,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
@@ -130,11 +131,39 @@ namespace QuickConnection
             _canvasToolbar.Items.Add(toolStripSeparator);
 
             ToolStripButton button = new ToolStripButton(Properties.Resources.QuickwireIcon_24) { Checked = UseQuickConnection, ToolTipText = "Use Quick Connection" };
+            ToolStripMenuItem major = new ToolStripMenuItem("Quick Connection", Properties.Resources.QuickwireIcon_24) { Checked = UseQuickConnection};
+
             button.Click += (sender, e) =>
             {
-                UseQuickConnection = button.Checked = !button.Checked;
+                UseQuickConnection = button.Checked = major.Checked = !button.Checked;
             };
+            major.Click += (sender, e) =>
+            {
+                UseQuickConnection = button.Checked = major.Checked = !major.Checked;
+            };
+
+            //Add three function for set the default library.
+            major.DropDownItems.Add(new ToolStripMenuItem("Set Core Only Library", null, (sender, e) => new Thread(() => 
+            { 
+                StaticCreateObjectItems.CreateDefaultStyle(true);
+                SaveToJson();
+            }).Start()) { ToolTipText = "Click to set the default quick connection library about all core document objects."});
+
+            major.DropDownItems.Add(new ToolStripMenuItem("Set All Component's Library", null, (sender, e) => new Thread(() =>
+            {
+                StaticCreateObjectItems.CreateDefaultStyle(false);
+                SaveToJson();
+            }).Start()) { ToolTipText = "Click to set the default quick connection library about all document objects." });
+
+            major.DropDownItems.Add(new ToolStripMenuItem("Clear Library", null, (sender, e) => 
+            { 
+                StaticCreateObjectItems = new CreateObjectItems();
+                SaveToJson();
+            })
+            { ToolTipText = "Clear the Library." });
+
             _canvasToolbar.Items.Add(button);
+            ((ToolStripMenuItem)editor.MainMenuStrip.Items[3]).DropDownItems.Insert(3, major);
         }
 
         private static void ActiveCanvas_MouseDown(object sender, MouseEventArgs e)
