@@ -50,8 +50,15 @@ namespace QuickConnection
         #region Json Edit
         internal static void SaveToJson()
         {
-            JavaScriptSerializer ser = new JavaScriptSerializer();
-            File.WriteAllText(_location, ser.Serialize(new CreateObjectItemsSave(StaticCreateObjectItems)));
+            JavaScriptSerializer ser = new JavaScriptSerializer() { MaxJsonLength = int.MaxValue};
+            try
+            {
+                File.WriteAllText(_location, ser.Serialize(new CreateObjectItemsSave(StaticCreateObjectItems)));
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Json Library Save Failed");
+            }
         }
 
         internal static void RemoveAllQuickwireSettings()
@@ -107,8 +114,15 @@ namespace QuickConnection
                 if (File.Exists(_location))
                 {
                     string jsonStr = File.ReadAllText(_location);
-                    JavaScriptSerializer ser = new JavaScriptSerializer();
-                    StaticCreateObjectItems = new CreateObjectItems(ser.Deserialize<CreateObjectItemsSave>(jsonStr));
+                    JavaScriptSerializer ser = new JavaScriptSerializer() { MaxJsonLength = int.MaxValue };
+                    try
+                    {
+                        StaticCreateObjectItems = new CreateObjectItems(ser.Deserialize<CreateObjectItemsSave>(jsonStr));
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Json Library Load Failed");
+                    }
                 }
                 else
                 {
