@@ -60,18 +60,33 @@ namespace QuickConnection
 
         public override GH_ObjectResponse RespondToMouseUp(GH_Canvas sender, GH_CanvasMouseEvent e)
         {
+            if (!IsActive)
+            {
+                return GH_ObjectResponse.Release;
+            }
+            if (!Canvas.IsDocument)
+            {
+                return GH_ObjectResponse.Release;
+            }
+
             IGH_Param source = (IGH_Param)_sourceInfo.GetValue(this);
 
-            if (DistanceTo(e.CanvasLocation, CanvasPointDown) < 10)
+            bool notHoldKeys = Control.ModifierKeys == Keys.None;
+
+            //Make Click To Enable Interaction.
+            if (DistanceTo(e.CanvasLocation, CanvasPointDown) < 10 && notHoldKeys)
             {
                 return GH_ObjectResponse.Ignore;
             }
+            //End the Interaction.
             else if (e.Button != MouseButtons.Left)
             {
                 Instances.ActiveCanvas.ActiveInteraction = null;
                 return GH_ObjectResponse.Ignore;
             }
-            else if (e.Button == MouseButtons.Left && _targetInfo.GetValue(this) == null && !source.Attributes.GetTopLevel.Bounds.Contains(e.CanvasLocation))
+            //Open the Operation Window.
+            else if (e.Button == MouseButtons.Left && _targetInfo.GetValue(this) == null && notHoldKeys &&
+                !source.Attributes.GetTopLevel.Bounds.Contains(e.CanvasLocation))
             {
                 Point location = Instances.ActiveCanvas.PointToScreen(e.ControlLocation);
 
