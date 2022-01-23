@@ -112,6 +112,12 @@ namespace QuickConnection
             DoingSomethingFirst(editor);
         }
 
+        private static void LoadFromLocal()
+        {
+            JavaScriptSerializer ser = new JavaScriptSerializer() { MaxJsonLength = int.MaxValue };
+            StaticCreateObjectItems = new CreateObjectItems(ser.Deserialize<CreateObjectItemsSave>(Properties.Resources.quickwires));
+        }
+
         private void DoingSomethingFirst(GH_DocumentEditor editor)
         {
             //Read from json.
@@ -132,7 +138,7 @@ namespace QuickConnection
                 }
                 else
                 {
-                    StaticCreateObjectItems.CreateDefaultStyle(true);
+                    LoadFromLocal();
                 }
             }
             catch (Exception ex)
@@ -185,6 +191,13 @@ namespace QuickConnection
                 StaticCreateObjectItems.CreateDefaultStyle(false);
                 SaveToJson();
             }).Start()) { ToolTipText = "Click to set the default quick connection library about all document objects." });
+
+            major.DropDownItems.Add(new ToolStripMenuItem("Load Default Library", null, (sender, e) => new Thread(() =>
+            {
+                LoadFromLocal();
+                SaveToJson();
+            }).Start())
+            { ToolTipText = "Click to load default quick connection library from gha file." });
 
             major.DropDownItems.Add(new ToolStripMenuItem("Clear Library", null, (sender, e) => 
             { 

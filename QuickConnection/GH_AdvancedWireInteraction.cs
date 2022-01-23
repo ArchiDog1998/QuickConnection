@@ -184,7 +184,6 @@ namespace QuickConnection
             //If the wire is connected than return.
             if (((IGH_Param)_targetInfo.GetValue(this)) != null)
             {
-                MessageBox.Show(_targetInfo.GetValue(this).ToString());
                 return base.RespondToMouseUp(sender, e);
             }
             //End the Interaction if indeed.
