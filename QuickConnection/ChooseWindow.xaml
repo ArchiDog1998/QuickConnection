@@ -56,7 +56,7 @@
             <SolidColorBrush>
                 <SolidColorBrush.Color>
                     <Color>
-                        <Color.A>120</Color.A>
+                        <Color.A>190</Color.A>
                         <Color.R>255</Color.R>
                         <Color.G>255</Color.G>
                         <Color.B>255</Color.B>

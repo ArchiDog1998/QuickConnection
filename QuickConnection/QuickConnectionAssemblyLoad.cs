@@ -35,6 +35,12 @@ namespace QuickConnection
             set => Instances.Settings.SetValue(nameof(UseQuickConnection), value);
         }
 
+        public static bool UseFuzzyConnection
+        {
+            get => Instances.Settings.GetValue(nameof(UseFuzzyConnection), true);
+            set => Instances.Settings.SetValue(nameof(UseFuzzyConnection), value);
+        }
+
         public static double QuickConnectionWindowWidth
         {
             get => Instances.Settings.GetValue(nameof(QuickConnectionWindowWidth), 200.0);
@@ -155,6 +161,17 @@ namespace QuickConnection
             {
                 UseQuickConnection = button.Checked = major.Checked = !major.Checked;
             };
+
+            major.DropDownItems.Add(new ToolStripMenuItem("Use Fuzzy Connection", null, (sender, e) =>
+            {
+                ToolStripMenuItem item = (ToolStripMenuItem)sender;
+                item.Checked = UseFuzzyConnection = !item.Checked;
+            })
+            { 
+                Checked = UseFuzzyConnection,
+            });
+
+            GH_Component.Menu_AppendSeparator(major.DropDown);
 
             #region Add three function for set the default library.
             major.DropDownItems.Add(new ToolStripMenuItem("Set Core Only Library", null, (sender, e) => new Thread(() => 
