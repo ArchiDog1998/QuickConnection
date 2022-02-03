@@ -51,7 +51,7 @@ namespace QuickConnection
                 _pointInfo.SetValue(this, _lastCanvasLoacation);
                 iParent.Refresh();
             }
-            m_active = true;
+            //m_active = true;
         }
 
         public override GH_ObjectResponse RespondToMouseMove(GH_Canvas sender, GH_CanvasMouseEvent e)
@@ -59,6 +59,8 @@ namespace QuickConnection
             //Make sure when window open, the preview is stable.
             if (_lastCanvasLoacation != PointF.Empty)
                 return GH_ObjectResponse.Handled;
+
+            base.RespondToMouseMove(sender, e);
 
             _fixCursor.Invoke(this, new object[] { });
 
