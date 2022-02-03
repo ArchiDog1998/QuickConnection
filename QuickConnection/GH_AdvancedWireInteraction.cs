@@ -51,7 +51,6 @@ namespace QuickConnection
                 _pointInfo.SetValue(this, _lastCanvasLoacation);
                 iParent.Refresh();
             }
-            //m_active = true;
         }
 
         public override GH_ObjectResponse RespondToMouseMove(GH_Canvas sender, GH_CanvasMouseEvent e)
