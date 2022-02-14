@@ -4,6 +4,7 @@ using Grasshopper.GUI.Canvas;
 using Grasshopper.GUI.Canvas.Interaction;
 using Grasshopper.Kernel;
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
@@ -43,6 +44,9 @@ namespace QuickConnection
         }
         internal static PointF _lastCanvasLoacation = PointF.Empty;
 
+
+        private Stopwatch _timer;
+        private bool _isFirstUp = true;
         public GH_AdvancedWireInteraction(GH_Canvas iParent, GH_CanvasMouseEvent mEvent, IGH_Param Source)
             : base(iParent, mEvent, Source)
         {
@@ -51,6 +55,8 @@ namespace QuickConnection
                 _pointInfo.SetValue(this, _lastCanvasLoacation);
                 iParent.Refresh();
             }
+            _timer = new Stopwatch();
+            _timer.Start();
         }
 
         public override GH_ObjectResponse RespondToMouseMove(GH_Canvas sender, GH_CanvasMouseEvent e)
@@ -179,9 +185,9 @@ namespace QuickConnection
             }
 
             IGH_Param source = (IGH_Param)_sourceInfo.GetValue(this);
-
             bool notHoldKeys = Control.ModifierKeys == Keys.None;
-
+            bool inTime = _isFirstUp && _timer.ElapsedMilliseconds < QuickConnectionAssemblyLoad.QuickConnectionMaxWaitTime;
+            _isFirstUp = false;
             //If the wire is connected than return.
             if (((IGH_Param)_targetInfo.GetValue(this)) != null)
             {
@@ -194,13 +200,12 @@ namespace QuickConnection
                 return GH_ObjectResponse.Ignore;
             }
             //Make Click To Enable Interaction.
-            else if (DistanceTo(e.CanvasLocation, CanvasPointDown) < 10 && notHoldKeys)
+            else if ((inTime || DistanceTo(e.CanvasLocation, CanvasPointDown) < 10) && notHoldKeys)
             {
                 return GH_ObjectResponse.Ignore;
             }
             //Open the Operation Window.
-            else if (notHoldKeys &&
-                !source.Attributes.GetTopLevel.Bounds.Contains(e.CanvasLocation))
+            else if (notHoldKeys && !source.Attributes.GetTopLevel.Bounds.Contains(e.CanvasLocation))
             {
                 Point location = Instances.ActiveCanvas.PointToScreen(e.ControlLocation);
 

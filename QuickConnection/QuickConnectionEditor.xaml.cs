@@ -30,7 +30,7 @@ namespace QuickConnection
     /// </summary>
     public partial class QuickConnectionEditor : Window
     {
-        private GH_Canvas _canvas = Grasshopper.Instances.ActiveCanvas;
+        private readonly GH_Canvas _canvas = Grasshopper.Instances.ActiveCanvas;
         private bool _isTheSame = false;
         private IGH_Param _targetParam;
         private IGH_Param TargetParam 
@@ -130,7 +130,6 @@ namespace QuickConnection
         {
             CreateObjectItem[] saveItems = ((ObservableCollection<CreateObjectItem>)DataContext).ToArray();
             _saveValue(saveItems, _isInput);
-
         }
 
         protected override void OnClosed(EventArgs e)

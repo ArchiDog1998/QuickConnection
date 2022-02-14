@@ -1,5 +1,6 @@
 ﻿using Grasshopper;
 using Grasshopper.GUI;
+using Grasshopper.GUI.Base;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.GUI.Canvas.Interaction;
 using Grasshopper.Kernel;
@@ -51,6 +52,12 @@ namespace QuickConnection
         {
             get => Instances.Settings.GetValue(nameof(QuickConnectionWindowHeight), 200.0);
             set => Instances.Settings.SetValue(nameof(QuickConnectionWindowHeight), value);
+        }
+        private static int _quickConnectionMaxWaitTimeDefault = 100;
+        public static int QuickConnectionMaxWaitTime
+        {
+            get => Instances.Settings.GetValue(nameof(QuickConnectionMaxWaitTime), _quickConnectionMaxWaitTimeDefault);
+            set => Instances.Settings.SetValue(nameof(QuickConnectionMaxWaitTime), value);
         }
 
         #region Json Edit
@@ -180,6 +187,11 @@ namespace QuickConnection
             GH_Component.Menu_AppendSeparator(major.DropDown);
 
             #region Add three function for set the default library.
+
+            CreateNumberBox(major, "Click Wait Time", "The time from the first down to the first up of the mouse is less than this value, then it is considered a click.", 
+                QuickConnectionMaxWaitTime, (v) => QuickConnectionMaxWaitTime = (int)v, _quickConnectionMaxWaitTimeDefault, 1000, 0);
+            GH_DocumentObject.Menu_AppendSeparator(major.DropDown);
+
             major.DropDownItems.Add(new ToolStripMenuItem("Set Core Only Library", null, (sender, e) => new Thread(() => 
             { 
                 StaticCreateObjectItems.CreateDefaultStyle(true);
@@ -208,9 +220,61 @@ namespace QuickConnection
             #endregion
 
             _canvasToolbar.Items.Add(button);
-            ((ToolStripMenuItem)editor.MainMenuStrip.Items[3]).DropDownItems.Insert(3, major);
+            ((ToolStripMenuItem)editor.MainMenuStrip.Items[1]).DropDownItems.Insert(16, major);
         }
 
+        private static void CreateNumberBox(ToolStripMenuItem item, string itemName, string description, double originValue, Action<double> valueChange, double valueDefault, double Max, double Min, int decimalPlace = 0)
+        {
+            item.DropDown.Closing -= DropDown_Closing;
+            item.DropDown.Closing += DropDown_Closing;
+
+            CreateTextLabel(item, itemName, description + $"\nValue from {Min} to {Max}");
+
+            GH_DigitScroller slider = new GH_DigitScroller
+            {
+                MinimumValue = (decimal)Min,
+                MaximumValue = (decimal)Max,
+                DecimalPlaces = decimalPlace,
+                Value = (decimal)originValue,
+                Size = new Size(150, 24),
+            };
+            slider.ValueChanged += Slider_ValueChanged;
+
+            void Slider_ValueChanged(object sender, GH_DigitScrollerEventArgs e)
+            {
+                double result = (double)e.Value;
+                result = result >= Min ? result : Min;
+                result = result <= Max ? result : Max;
+                slider.Value = (decimal)result;
+
+                valueChange.Invoke(result);
+
+            }
+
+            GH_DocumentObject.Menu_AppendCustomItem(item.DropDown, slider);
+
+            //Add a Reset Item.
+            ToolStripMenuItem resetItem = new ToolStripMenuItem("Reset Value", Properties.Resources.ResetIcons_24);
+            resetItem.Click += (sender, e) =>
+            {
+                slider.Value = (decimal)valueDefault;
+                valueChange.Invoke(valueDefault);
+            };
+            item.DropDownItems.Add(resetItem);
+        }
+        private static void CreateTextLabel(ToolStripMenuItem item, string name, string tooltips = null)
+        {
+            ToolStripLabel textBox = new ToolStripLabel(name);
+            textBox.TextAlign = ContentAlignment.MiddleCenter;
+            textBox.Font = new Font(textBox.Font, FontStyle.Bold);
+            if (!string.IsNullOrEmpty(tooltips))
+                textBox.ToolTipText = tooltips;
+            item.DropDownItems.Add(textBox);
+        }
+        private static void DropDown_Closing(object sender, ToolStripDropDownClosingEventArgs e)
+        {
+            e.Cancel = e.CloseReason == ToolStripDropDownCloseReason.ItemClicked;
+        }
         private static void ActiveCanvas_MouseDown(object sender, MouseEventArgs e)
         {
             if (UseQuickConnection && e.Button == MouseButtons.Left)

@@ -78,5 +78,15 @@ namespace QuickConnection.Properties {
                 return ResourceManager.GetString("quickwires", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap ResetIcons_24 {
+            get {
+                object obj = ResourceManager.GetObject("ResetIcons_24", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }
