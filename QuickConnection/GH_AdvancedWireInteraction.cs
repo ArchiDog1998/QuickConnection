@@ -57,6 +57,17 @@ namespace QuickConnection
             }
             _timer = new Stopwatch();
             _timer.Start();
+
+            if (Source.GetType().FullName.Contains("Grasshopper.Kernel.Components.GH_PlaceholderParameter") && !Source.Attributes.IsTopLevel)
+            {
+                if(Source.Attributes.GetTopLevel.DocObject is GH_Component parant)
+                {
+                    if (parant.Params.Output.Contains(Source))
+                    {
+                        _fromInputInfo.SetValue(this, false);
+                    }
+                }
+            }
         }
 
         public override GH_ObjectResponse RespondToMouseMove(GH_Canvas sender, GH_CanvasMouseEvent e)
@@ -65,7 +76,7 @@ namespace QuickConnection
             if (_lastCanvasLoacation != PointF.Empty)
                 return GH_ObjectResponse.Handled;
 
-            base.RespondToMouseMove(sender, e);
+            //base.RespondToMouseMove(sender, e);
 
             _fixCursor.Invoke(this, new object[] { });
 
