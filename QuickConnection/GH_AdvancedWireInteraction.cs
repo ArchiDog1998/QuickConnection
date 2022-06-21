@@ -14,20 +14,21 @@ namespace QuickConnection
 {
     public class GH_AdvancedWireInteraction : GH_WireInteraction
     {
-        internal static readonly FieldInfo _sourceInfo = typeof(GH_WireInteraction).GetRuntimeFields().Where(m => m.Name.Contains("m_source")).First();
-        private static readonly FieldInfo _targetInfo = typeof(GH_WireInteraction).GetRuntimeFields().Where(m => m.Name.Contains("m_target")).First();
+        internal static readonly FieldInfo _sourceInfo = typeof(GH_WireInteraction).GetRuntimeFields().First(m => m.Name.Contains("m_source"));
+        private static readonly FieldInfo _targetInfo = typeof(GH_WireInteraction).GetRuntimeFields().First(m => m.Name.Contains("m_target"));
 
         /// <summary>
         /// The mouse down location when this is created.
         /// </summary>
-        private static readonly FieldInfo _fromInputInfo = typeof(GH_WireInteraction).GetRuntimeFields().Where(m => m.Name.Contains("m_dragfrominput")).First();
+        private static readonly FieldInfo _fromInputInfo = typeof(GH_WireInteraction).GetRuntimeFields().First(m => m.Name.Contains("m_dragfrominput"));
 
         /// <summary>
         /// The point location right now.
         /// </summary>
-        private static readonly FieldInfo _pointInfo = typeof(GH_WireInteraction).GetRuntimeFields().Where(m => m.Name.Contains("m_point")).First();
+        private static readonly FieldInfo _pointInfo = typeof(GH_WireInteraction).GetRuntimeFields().First(m => m.Name.Contains("m_point"));
 
-        private static readonly MethodInfo _fixCursor = typeof(GH_WireInteraction).GetRuntimeMethods().Where(m => m.Name.Contains("FixCursor")).First();
+        private static readonly MethodInfo _fixCursor = typeof(GH_WireInteraction).GetRuntimeMethods().First(m => m.Name.Contains("FixCursor"));
+        private static readonly MethodInfo _performWire = typeof(GH_WireInteraction).GetRuntimeMethods().First(m => m.Name.Contains("PerformWireOperation"));
 
         private static float _screenScale = 0f;
 
@@ -62,10 +63,7 @@ namespace QuickConnection
             {
                 if(Source.Attributes.GetTopLevel.DocObject is GH_Component parant)
                 {
-                    if (parant.Params.Output.Contains(Source))
-                    {
-                        _fromInputInfo.SetValue(this, false);
-                    }
+                    _fromInputInfo.SetValue(this, parant.Params.Input.Contains(Source));
                 }
             }
         }
@@ -75,8 +73,6 @@ namespace QuickConnection
             //Make sure when window open, the preview is stable.
             if (_lastCanvasLoacation != PointF.Empty)
                 return GH_ObjectResponse.Handled;
-
-            //base.RespondToMouseMove(sender, e);
 
             _fixCursor.Invoke(this, new object[] { });
 
@@ -190,6 +186,7 @@ namespace QuickConnection
 
         public override GH_ObjectResponse RespondToMouseUp(GH_Canvas sender, GH_CanvasMouseEvent e)
         {
+
             if (!Canvas.IsDocument)
             {
                 return GH_ObjectResponse.Release;
@@ -202,7 +199,9 @@ namespace QuickConnection
             //If the wire is connected than return.
             if (((IGH_Param)_targetInfo.GetValue(this)) != null)
             {
-                return base.RespondToMouseUp(sender, e);
+                _performWire.Invoke(this, new object[] { GH_ObjectResponse.Release });
+                sender.Document.NewSolution(false);
+                return GH_ObjectResponse.Release;
             }
             //End the Interaction if indeed.
             else if (e.Button != MouseButtons.Left)

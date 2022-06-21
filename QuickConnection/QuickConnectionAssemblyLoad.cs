@@ -14,6 +14,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -26,6 +27,8 @@ namespace QuickConnection
     public class QuickConnectionAssemblyLoad : GH_AssemblyPriority
     {
         private static readonly string _location = Path.Combine(Folders.SettingsFolder, "quickwires.json");
+        internal static readonly FieldInfo _sourceInfo = typeof(GH_RewireInteraction).GetRuntimeFields().Where(m => m.Name.Contains("m_source")).First();
+        internal static readonly FieldInfo _inputInfo = typeof(GH_RewireInteraction).GetRuntimeFields().Where(m => m.Name.Contains("m_input")).First();
 
 
         internal static CreateObjectItems StaticCreateObjectItems = new CreateObjectItems();
@@ -156,6 +159,11 @@ namespace QuickConnection
             //Binding to respond.
             Instances.ActiveCanvas.MouseDown += ActiveCanvas_MouseDown;
 
+            ExchangeMethod(
+                typeof(GH_RewireInteraction).GetRuntimeMethods().Where(m => m.Name.Contains("get_IsValid")).First(),
+                typeof(GH_AdvancedRewireInteraction).GetRuntimeMethods().Where(m => m.Name.Contains("get_IsValid")).First()
+            );
+
             ToolStrip _canvasToolbar = editor.Controls[0].Controls[1] as ToolStrip;
 
             ToolStripSeparator toolStripSeparator = new ToolStripSeparator();
@@ -277,15 +285,59 @@ namespace QuickConnection
         }
         private static void ActiveCanvas_MouseDown(object sender, MouseEventArgs e)
         {
+            IGH_MouseInteraction activeInteraction = Instances.ActiveCanvas.ActiveInteraction;
+            if (activeInteraction == null) return;
+
+            //if (activeInteraction is GH_RewireInteraction)
+            //{
+            //    IGH_Param param = (IGH_Param)_sourceInfo.GetValue(activeInteraction);
+            //    if (param.GetType().FullName.Contains("Grasshopper.Kernel.Components.GH_PlaceholderParameter"))
+            //    {
+            //        if (param.Attributes.GetTopLevel.DocObject is GH_Component parant)
+            //        {
+            //            _inputInfo.SetValue(activeInteraction, parant.Params.Input.Contains(param));
+            //        }
+            //    }
+            //}
+
             if (UseQuickConnection && e.Button == MouseButtons.Left)
             {
-                IGH_MouseInteraction activeInteraction = Instances.ActiveCanvas.ActiveInteraction;
-                if (activeInteraction != null && activeInteraction is GH_WireInteraction)
+                if (activeInteraction is GH_WireInteraction)
                 {
                     Instances.ActiveCanvas.ActiveInteraction = new GH_AdvancedWireInteraction(activeInteraction.Owner,
                         new GH_CanvasMouseEvent(activeInteraction.Owner.Viewport, e), (IGH_Param)GH_AdvancedWireInteraction._sourceInfo.GetValue(activeInteraction));
                 }
             }
+        }
+
+        internal static bool ExchangeMethod(MethodInfo targetMethod, MethodInfo injectMethod)
+        {
+            if (targetMethod == null || injectMethod == null)
+            {
+                return false;
+            }
+            RuntimeHelpers.PrepareMethod(targetMethod.MethodHandle);
+            RuntimeHelpers.PrepareMethod(injectMethod.MethodHandle);
+            unsafe
+            {
+                if (IntPtr.Size == 4)
+                {
+                    int* tar = (int*)targetMethod.MethodHandle.Value.ToPointer() + 2;
+                    int* inj = (int*)injectMethod.MethodHandle.Value.ToPointer() + 2;
+                    var relay = *tar;
+                    *tar = *inj;
+                    *inj = relay;
+                }
+                else
+                {
+                    long* tar = (long*)targetMethod.MethodHandle.Value.ToPointer() + 1;
+                    long* inj = (long*)injectMethod.MethodHandle.Value.ToPointer() + 1;
+                    var relay = *tar;
+                    *tar = *inj;
+                    *inj = relay;
+                }
+            }
+            return true;
         }
     }
 }
