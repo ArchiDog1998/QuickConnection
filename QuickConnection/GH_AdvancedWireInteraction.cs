@@ -186,7 +186,6 @@ namespace QuickConnection
 
         public override GH_ObjectResponse RespondToMouseUp(GH_Canvas sender, GH_CanvasMouseEvent e)
         {
-
             if (!Canvas.IsDocument)
             {
                 return GH_ObjectResponse.Release;
@@ -201,7 +200,7 @@ namespace QuickConnection
             {
                 _performWire.Invoke(this, new object[] { GH_ObjectResponse.Release });
                 sender.Document.NewSolution(false);
-                return GH_ObjectResponse.Release;
+                return base.RespondToMouseUp(sender, e);
             }
             //End the Interaction if indeed.
             else if (e.Button != MouseButtons.Left)
