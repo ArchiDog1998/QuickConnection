@@ -29,6 +29,7 @@ namespace QuickConnection
 
         private static readonly MethodInfo _fixCursor = typeof(GH_WireInteraction).GetRuntimeMethods().First(m => m.Name.Contains("FixCursor"));
         private static readonly MethodInfo _performWire = typeof(GH_WireInteraction).GetRuntimeMethods().First(m => m.Name.Contains("PerformWireOperation"));
+        private static readonly FieldInfo _modeInfo = typeof(GH_WireInteraction).GetRuntimeFields().First(m => m.Name.Contains("m_mode"));
 
         private static float _screenScale = 0f;
 
@@ -46,12 +47,15 @@ namespace QuickConnection
         internal static PointF _lastCanvasLoacation = PointF.Empty;
 
 
+        private GH_PanInteraction _panInteraction;
+        private Point _panControlLocation;
+
         private Stopwatch _timer;
         private bool _isFirstUp = true;
         public GH_AdvancedWireInteraction(GH_Canvas iParent, GH_CanvasMouseEvent mEvent, IGH_Param Source)
             : base(iParent, mEvent, Source)
         {
-            if(_lastCanvasLoacation != PointF.Empty)
+            if (_lastCanvasLoacation != PointF.Empty)
             {
                 _pointInfo.SetValue(this, _lastCanvasLoacation);
                 iParent.Refresh();
@@ -66,6 +70,7 @@ namespace QuickConnection
                     _fromInputInfo.SetValue(this, parant.Params.Input.Contains(Source));
                 }
             }
+
         }
 
         public override GH_ObjectResponse RespondToMouseMove(GH_Canvas sender, GH_CanvasMouseEvent e)
@@ -81,6 +86,9 @@ namespace QuickConnection
             {
                 return GH_ObjectResponse.Ignore;
             }
+
+            _panInteraction?.RespondToMouseMove(sender, e);
+
             _pointInfo.SetValue(this, e.CanvasLocation);
             _targetInfo.SetValue(this, null);
 
@@ -141,6 +149,9 @@ namespace QuickConnection
                 }
             }
 
+            if (QuickConnectionAssemblyLoad.CantWireEasily) base.RespondToMouseMove(sender, e);
+
+
             if (iGH_Attributes == null)
             {
                 base.Canvas.Refresh();
@@ -179,7 +190,11 @@ namespace QuickConnection
         public override GH_ObjectResponse RespondToMouseDown(GH_Canvas sender, GH_CanvasMouseEvent e)
         {
             if (e.Button == MouseButtons.Right)
+            {
+                _panInteraction = new GH_PanInteraction(sender, e);
+                _panControlLocation = e.ControlLocation;
                 return base.RespondToMouseDown(sender, e);
+            }
             else
                 return RespondToMouseUp(sender, e);
         }
@@ -198,14 +213,40 @@ namespace QuickConnection
             //If the wire is connected than return.
             if (((IGH_Param)_targetInfo.GetValue(this)) != null)
             {
-                _performWire.Invoke(this, new object[] { GH_ObjectResponse.Release });
-                sender.Document.NewSolution(false);
-                return base.RespondToMouseUp(sender, e);
+                if (QuickConnectionAssemblyLoad.CantWireEasily)
+                {
+                    base.RespondToMouseUp(sender, e);
+                }
+                else
+                {
+                    _performWire.Invoke(this, new object[] { GH_ObjectResponse.Release });
+                    sender.Document.NewSolution(false);
+                    return GH_ObjectResponse.Release;
+                }
             }
             //End the Interaction if indeed.
             else if (e.Button != MouseButtons.Left)
             {
-                Instances.ActiveCanvas.ActiveInteraction = null;
+                if (_panInteraction != null && DistanceTo(e.ControlLocation, _panControlLocation) < 10)
+                {
+                    Instances.ActiveCanvas.ActiveInteraction = null;
+                }
+
+                _panInteraction = null;
+
+                switch ((int)_modeInfo.GetValue(this))
+                {
+                    default:
+                        Instances.CursorServer.AttachCursor(base.Canvas, "GH_NewWire");
+                        break;
+                    case 1:
+                        Instances.CursorServer.AttachCursor(base.Canvas, "GH_AddWire");
+                        break;
+                    case 2:
+                        Instances.CursorServer.AttachCursor(base.Canvas, "GH_RemoveWire");
+                        break;
+                }
+
                 return GH_ObjectResponse.Ignore;
             }
             //Make Click To Enable Interaction.

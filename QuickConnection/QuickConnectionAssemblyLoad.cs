@@ -33,6 +33,12 @@ namespace QuickConnection
 
         internal static CreateObjectItems StaticCreateObjectItems = new CreateObjectItems();
 
+        public static bool CantWireEasily
+        {
+            get => Instances.Settings.GetValue(nameof(CantWireEasily), false);
+            set => Instances.Settings.SetValue(nameof(CantWireEasily), value);
+        }
+
         public static bool UseQuickConnection
         {
             get => Instances.Settings.GetValue(nameof(UseQuickConnection), true);
@@ -194,11 +200,23 @@ namespace QuickConnection
 
             GH_Component.Menu_AppendSeparator(major.DropDown);
 
-            #region Add three function for set the default library.
 
             CreateNumberBox(major, "Click Wait Time", "The time from the first down to the first up of the mouse is less than this value, then it is considered a click.", 
                 QuickConnectionMaxWaitTime, (v) => QuickConnectionMaxWaitTime = (int)v, _quickConnectionMaxWaitTimeDefault, 1000, 0);
+
+            major.DropDownItems.Add(new ToolStripMenuItem("Can't Wire Easily", null, (sender, e) =>
+            {
+                ToolStripMenuItem item = (ToolStripMenuItem)sender;
+                item.Checked = CantWireEasily = !item.Checked;
+            })
+            {
+                ToolTipText = "If you can't wire functionally, please check it.",
+            });
+
+
             GH_DocumentObject.Menu_AppendSeparator(major.DropDown);
+
+            #region Add three function for set the default library.
 
             major.DropDownItems.Add(new ToolStripMenuItem("Set Core Only Library", null, (sender, e) => new Thread(() => 
             { 

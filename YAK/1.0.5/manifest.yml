@@ -1,0 +1,30 @@
+---
+name: QuickConnection
+version: 1.0.5
+authors:
+- 秋水
+description: >
+  Make wire connection much faster.
+  
+  
+  You can enable it on canvas toolbar.
+  
+  
+  When dragging the wire and release on blank, you'll be able to choose which object you want to connect with on the tab control.
+  
+  
+  You can also edit the items in tab control. Just right click the tab icon and you'll see an edit window, Just Edit There.
+  
+  
+  1.0.5 Notes
+  
+  1. Fix the default wiring failed bug. You should Check the "Can't Wire Easily" Menu in Edit to fix this in some version. 
+  
+  2. You can move canvas when wiring.
+  
+url: https://github.com/ArchiDog1998/QuickConnection
+keywords:
+- connection
+- wire
+- qiushui
+icon_url: https://static.food4rhino.com/s3fs-public/styles/thumbnail/public/users-files/qiu-shui/app/quickwireicon256.png

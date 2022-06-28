@@ -272,7 +272,7 @@ namespace QuickConnection
         private void Menu_EditItemLeftClicked(Guid guid, bool isInput)
         {
             IGH_DocumentObject obj = Instances.ComponentServer.EmitObject(guid);
-            if (!IsPersistentParam(obj.GetType(), out _)) return;
+            if (obj == null) return;
             new CreateObjectItem(guid, 0, "", isInput).CreateObject(_owner, _position);
             this.Close();
         }
