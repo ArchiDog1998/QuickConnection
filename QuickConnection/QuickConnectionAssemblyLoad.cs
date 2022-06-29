@@ -320,7 +320,7 @@ namespace QuickConnection
 
             if (UseQuickConnection && e.Button == MouseButtons.Left)
             {
-                if (activeInteraction is GH_WireInteraction)
+                if (activeInteraction is GH_WireInteraction && !(activeInteraction is GH_AdvancedWireInteraction))
                 {
                     Instances.ActiveCanvas.ActiveInteraction = new GH_AdvancedWireInteraction(activeInteraction.Owner,
                         new GH_CanvasMouseEvent(activeInteraction.Owner.Viewport, e), (IGH_Param)GH_AdvancedWireInteraction._sourceInfo.GetValue(activeInteraction));

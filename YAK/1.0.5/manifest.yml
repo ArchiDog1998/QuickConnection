@@ -1,6 +1,6 @@
 ---
 name: QuickConnection
-version: 1.0.5
+version: 1.0.5.1
 authors:
 - 秋水
 description: >
@@ -13,7 +13,10 @@ description: >
   When dragging the wire and release on blank, you'll be able to choose which object you want to connect with on the tab control.
   
   
-  You can also edit the items in tab control. Just right click the tab icon and you'll see an edit window, Just Edit There.
+  You can also edit the items in tab control. Just right click the tab icon and you'll see an edit window. And your settings are under Settings Folder called quickwires.json.
+  
+  
+  Single click to wire is available.
   
   
   1.0.5 Notes
