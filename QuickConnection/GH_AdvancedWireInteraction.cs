@@ -32,7 +32,7 @@ namespace QuickConnection
         private static readonly FieldInfo _modeInfo = typeof(GH_WireInteraction).GetRuntimeFields().First(m => m.Name.Contains("m_mode"));
 
         private static float _screenScale = 0f;
-
+        internal static bool _click = false;
         internal static float screenScale
         {
             get
@@ -213,9 +213,10 @@ namespace QuickConnection
             //If the wire is connected than return.
             if (((IGH_Param)_targetInfo.GetValue(this)) != null)
             {
+                _click = true;
                 if (QuickConnectionAssemblyLoad.CantWireEasily)
                 {
-                    base.RespondToMouseUp(sender, e);
+                    return base.RespondToMouseUp(sender, e);
                 }
                 else
                 {

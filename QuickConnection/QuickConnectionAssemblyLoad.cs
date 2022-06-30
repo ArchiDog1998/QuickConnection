@@ -306,25 +306,16 @@ namespace QuickConnection
             IGH_MouseInteraction activeInteraction = Instances.ActiveCanvas.ActiveInteraction;
             if (activeInteraction == null) return;
 
-            //if (activeInteraction is GH_RewireInteraction)
-            //{
-            //    IGH_Param param = (IGH_Param)_sourceInfo.GetValue(activeInteraction);
-            //    if (param.GetType().FullName.Contains("Grasshopper.Kernel.Components.GH_PlaceholderParameter"))
-            //    {
-            //        if (param.Attributes.GetTopLevel.DocObject is GH_Component parant)
-            //        {
-            //            _inputInfo.SetValue(activeInteraction, parant.Params.Input.Contains(param));
-            //        }
-            //    }
-            //}
-
-            if (UseQuickConnection && e.Button == MouseButtons.Left)
+            if (UseQuickConnection && e.Button == MouseButtons.Left && activeInteraction is GH_WireInteraction)
             {
-                if (activeInteraction is GH_WireInteraction && !(activeInteraction is GH_AdvancedWireInteraction))
+                if (GH_AdvancedWireInteraction._click)
                 {
-                    Instances.ActiveCanvas.ActiveInteraction = new GH_AdvancedWireInteraction(activeInteraction.Owner,
-                        new GH_CanvasMouseEvent(activeInteraction.Owner.Viewport, e), (IGH_Param)GH_AdvancedWireInteraction._sourceInfo.GetValue(activeInteraction));
+                    GH_AdvancedWireInteraction._click = false;
+                    return;
                 }
+
+                Instances.ActiveCanvas.ActiveInteraction = new GH_AdvancedWireInteraction(activeInteraction.Owner,
+                    new GH_CanvasMouseEvent(activeInteraction.Owner.Viewport, e), (IGH_Param)GH_AdvancedWireInteraction._sourceInfo.GetValue(activeInteraction));
             }
         }
 
