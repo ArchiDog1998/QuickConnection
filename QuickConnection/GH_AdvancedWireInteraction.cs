@@ -164,8 +164,20 @@ namespace QuickConnection
             bool inTime = _isFirstUp && _timer.ElapsedMilliseconds < QuickConnectionAssemblyLoad.QuickConnectionMaxWaitTime;
             _isFirstUp = false;
 
+            if (e.Button != MouseButtons.Left)
+            {
+                if (_panInteraction != null && GH_AdvancedWireInteraction.DistanceTo(e.ControlLocation, _panControlLocation) < 10)
+                {
+                    Instances.ActiveCanvas.ActiveInteraction = null;
+                }
+
+                _panInteraction = null;
+                return GH_ObjectResponse.Ignore;
+
+            }
+
             //If the wire is connected than return.
-            if (((IGH_Param)_targetInfo.GetValue(this)) != null)
+            else  if (((IGH_Param)_targetInfo.GetValue(this)) != null)
             {
                 _click.Restart();
                 if (QuickConnectionAssemblyLoad.CantWireEasily)

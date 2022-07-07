@@ -123,7 +123,6 @@ namespace QuickConnection
 
                 _panInteraction = null;
                 return GH_ObjectResponse.Ignore;
-
             }
             else  if (target != null)
             {
