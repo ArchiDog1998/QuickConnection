@@ -97,56 +97,9 @@ namespace QuickConnection
             IGH_Attributes iGH_Attributes = document.FindAttributeByGrip(e.CanvasLocation, bLimitToOutside: false, !fromInput, fromInput, 20);
 
             //Closest Attribute.
-            if (QuickConnectionAssemblyLoad.UseFuzzyConnection && iGH_Attributes == null)
+            if(iGH_Attributes == null)
             {
-                IGH_Attributes attr = document.FindAttribute(e.CanvasLocation, true);
-                if (attr != null)
-                {
-                    IGH_DocumentObject obj = attr.DocObject;
-                    if (obj != null)
-                    {
-                        if (obj is IGH_Param)
-                        {
-                            if (fromInput && attr.HasOutputGrip)
-                            {
-                                iGH_Attributes = attr;
-                            }
-                            else if (!fromInput && attr.HasInputGrip)
-                            {
-                                iGH_Attributes = attr;
-                            }
-                        }
-                        else if (obj is IGH_Component)
-                        {
-                            IGH_Component com = (IGH_Component)obj;
-                            float minDis = float.MaxValue;
-                            if (fromInput)
-                            {
-                                foreach (IGH_Param param in com.Params.Output)
-                                {
-                                    float dis = Distance(param.Attributes.OutputGrip, e.CanvasLocation);
-                                    if (dis < minDis)
-                                    {
-                                        minDis = dis;
-                                        iGH_Attributes = param.Attributes;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                foreach (IGH_Param param in com.Params.Input)
-                                {
-                                    float dis = Distance(param.Attributes.InputGrip, e.CanvasLocation);
-                                    if (dis < minDis)
-                                    {
-                                        minDis = dis;
-                                        iGH_Attributes = param.Attributes;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                iGH_Attributes = GetRightAttribute(document, e, fromInput);
             }
 
             if (QuickConnectionAssemblyLoad.CantWireEasily) base.RespondToMouseMove(sender, e);
@@ -210,6 +163,7 @@ namespace QuickConnection
             bool notHoldKeys = Control.ModifierKeys == Keys.None;
             bool inTime = _isFirstUp && _timer.ElapsedMilliseconds < QuickConnectionAssemblyLoad.QuickConnectionMaxWaitTime;
             _isFirstUp = false;
+
             //If the wire is connected than return.
             if (((IGH_Param)_targetInfo.GetValue(this)) != null)
             {
@@ -225,33 +179,9 @@ namespace QuickConnection
                     return GH_ObjectResponse.Release;
                 }
             }
-            //End the Interaction if indeed.
-            else if (e.Button != MouseButtons.Left)
-            {
-                if (_panInteraction != null && DistanceTo(e.ControlLocation, _panControlLocation) < 10)
-                {
-                    Instances.ActiveCanvas.ActiveInteraction = null;
-                }
 
-                _panInteraction = null;
-
-                switch ((int)_modeInfo.GetValue(this))
-                {
-                    default:
-                        Instances.CursorServer.AttachCursor(base.Canvas, "GH_NewWire");
-                        break;
-                    case 1:
-                        Instances.CursorServer.AttachCursor(base.Canvas, "GH_AddWire");
-                        break;
-                    case 2:
-                        Instances.CursorServer.AttachCursor(base.Canvas, "GH_RemoveWire");
-                        break;
-                }
-
-                return GH_ObjectResponse.Ignore;
-            }
             //Make Click To Enable Interaction.
-            else if ((inTime || DistanceTo(e.CanvasLocation, CanvasPointDown) < 10) && notHoldKeys)
+            else if ((inTime || DistanceTo(e.CanvasLocation, CanvasPointDown) < 10))
             {
                 return GH_ObjectResponse.Ignore;
             }
@@ -276,7 +206,63 @@ namespace QuickConnection
             return base.RespondToMouseUp(sender, e);
         }
 
-        private static float DistanceTo(PointF a, PointF b)
+        internal static IGH_Attributes GetRightAttribute(GH_Document document, GH_CanvasMouseEvent e, bool input)
+        {
+            if (!QuickConnectionAssemblyLoad.UseFuzzyConnection) return null;
+            IGH_Attributes iGH_Attributes = null;
+
+            IGH_Attributes attr = document.FindAttribute(e.CanvasLocation, true);
+            if(attr == null) return null;
+
+            IGH_DocumentObject obj = attr.DocObject;
+            if (obj == null) return null;
+
+            if (obj is IGH_Param)
+            {
+                if (input && attr.HasOutputGrip)
+                {
+                    iGH_Attributes = attr;
+                }
+                else if (!input && attr.HasInputGrip)
+                {
+                    iGH_Attributes = attr;
+                }
+            }
+            else if (obj is IGH_Component)
+            {
+                IGH_Component com = (IGH_Component)obj;
+                float minDis = float.MaxValue;
+                if (input)
+                {
+                    foreach (IGH_Param param in com.Params.Output)
+                    {
+                        float dis = Distance(param.Attributes.OutputGrip, e.CanvasLocation);
+                        if (dis < minDis)
+                        {
+                            minDis = dis;
+                            iGH_Attributes = param.Attributes;
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (IGH_Param param in com.Params.Input)
+                    {
+                        float dis = Distance(param.Attributes.InputGrip, e.CanvasLocation);
+                        if (dis < minDis)
+                        {
+                            minDis = dis;
+                            iGH_Attributes = param.Attributes;
+                        }
+                    }
+                }
+            }
+
+            return iGH_Attributes;
+
+        }
+
+        internal static float DistanceTo(PointF a, PointF b)
         {
             return (float)Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
         }

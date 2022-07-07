@@ -306,20 +306,29 @@ namespace QuickConnection
             IGH_MouseInteraction activeInteraction = Instances.ActiveCanvas.ActiveInteraction;
             if (activeInteraction == null) return;
 
-            if (UseQuickConnection && e.Button == MouseButtons.Left && activeInteraction is GH_WireInteraction)
+
+            if (UseQuickConnection && e.Button == MouseButtons.Left)
             {
-                if (GH_AdvancedWireInteraction._click.IsRunning && GH_AdvancedWireInteraction._click.ElapsedMilliseconds < 200)
-                {
-                    GH_AdvancedWireInteraction._click.Reset();
-                    return;
-                }
                 if (GH_AdvancedWireInteraction._click.IsRunning)
                 {
-                    GH_AdvancedWireInteraction._click.Reset();
+                    if (GH_AdvancedWireInteraction._click.ElapsedMilliseconds < 200)
+                    {
+                        //GH_AdvancedWireInteraction._click.Reset();
+                        return;
+                    }
+                    GH_AdvancedWireInteraction._click.Stop();
                 }
 
-                Instances.ActiveCanvas.ActiveInteraction = new GH_AdvancedWireInteraction(activeInteraction.Owner,
-                    new GH_CanvasMouseEvent(activeInteraction.Owner.Viewport, e), (IGH_Param)GH_AdvancedWireInteraction._sourceInfo.GetValue(activeInteraction));
+                if (activeInteraction is GH_WireInteraction)
+                {
+                    Instances.ActiveCanvas.ActiveInteraction = new GH_AdvancedWireInteraction(activeInteraction.Owner,
+                        new GH_CanvasMouseEvent(activeInteraction.Owner.Viewport, e), (IGH_Param)GH_AdvancedWireInteraction._sourceInfo.GetValue(activeInteraction));
+                }
+                else if (activeInteraction is GH_RewireInteraction)
+                {
+                    Instances.ActiveCanvas.ActiveInteraction = new GH_AdvancedRewireInteraction(activeInteraction.Owner,
+                        new GH_CanvasMouseEvent(activeInteraction.Owner.Viewport, e), (IGH_Param)GH_AdvancedRewireInteraction._sourceInfo.GetValue(activeInteraction));
+                }
             }
         }
 
