@@ -155,7 +155,7 @@ namespace QuickConnection
                 }
 
                 sender.Document.NewSolution(expireAllObjects: false);
-                GH_AdvancedWireInteraction._click.Restart();
+                GH_AdvancedWireInteraction._click = e.CanvasLocation;
                 return GH_ObjectResponse.Release;
             }
 

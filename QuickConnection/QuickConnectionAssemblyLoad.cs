@@ -309,14 +309,14 @@ namespace QuickConnection
 
             if (UseQuickConnection && e.Button == MouseButtons.Left)
             {
-                if (GH_AdvancedWireInteraction._click.IsRunning)
+                if (GH_AdvancedWireInteraction._click != PointF.Empty)
                 {
-                    if (GH_AdvancedWireInteraction._click.ElapsedMilliseconds < 200)
+                    if (GH_AdvancedWireInteraction.DistanceTo(activeInteraction.CanvasPointDown, GH_AdvancedWireInteraction._click) < 10)
                     {
                         //GH_AdvancedWireInteraction._click.Reset();
                         return;
                     }
-                    GH_AdvancedWireInteraction._click.Stop();
+                    GH_AdvancedWireInteraction._click = PointF.Empty;
                 }
 
                 if (activeInteraction is GH_WireInteraction)
