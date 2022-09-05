@@ -41,6 +41,8 @@
             <Setter Property="ItemsPanel">
                 <Setter.Value>
                     <ItemsPanelTemplate>
+                        <!--<VirtualizingStackPanel/>-->
+
                         <WrapPanel IsItemsHost="True" Orientation="Horizontal"/>
                     </ItemsPanelTemplate>
                 </Setter.Value>

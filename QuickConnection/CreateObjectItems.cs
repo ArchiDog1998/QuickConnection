@@ -64,7 +64,7 @@ namespace QuickConnection
             }
         }
 
-        public void CreateDefaultStyle(bool isCoreOnly)
+        public void CreateDefaultStyle(bool isCoreOnly, Guid[] ids = null)
         {
             SortedDictionary<Guid, List<CreateObjectItem>> inputItems = new SortedDictionary<Guid, List<CreateObjectItem>>();
             SortedDictionary<Guid, List<CreateObjectItem>> outputItems = new SortedDictionary<Guid, List<CreateObjectItem>>();
@@ -72,6 +72,7 @@ namespace QuickConnection
             SortedDictionary<Guid, Guid> outputRemap = new SortedDictionary<Guid, Guid>();
             List<CreateObjectItem> listItems = new List<CreateObjectItem>();
             List<CreateObjectItem> treeItems  = new List<CreateObjectItem>();
+            int createCount = 0;
 
             //Add every object to my dictionary.
             foreach (var proxy in Instances.ComponentServer.ObjectProxies)
@@ -79,7 +80,7 @@ namespace QuickConnection
                 //Check for if we should skip this object proxy.
                 if (proxy.Kind != GH_ObjectType.CompiledObject) continue;
                 if (proxy.Obsolete) continue;
-                if (proxy.Exposure.HasFlag(GH_Exposure.hidden)) continue;
+                //if (proxy.Exposure.HasFlag(GH_Exposure.hidden)) continue;
 
                 if (isCoreOnly)
                 {
@@ -94,14 +95,17 @@ namespace QuickConnection
                     }
                     if (!isCore) continue;
                 }
+                else if(ids != null && ids.Length > 0)
+                {
+                    if (!ids.Contains(proxy.LibraryGuid)) continue;
+                }
 
                 IGH_DocumentObject obj = proxy.CreateInstance();
+                createCount++;
 
                 //Case Component
-                if(obj is IGH_Component)
+                if (obj is IGH_Component component)
                 {
-                    IGH_Component component = (IGH_Component)obj;
-
                     //Add for inputs.
                     for (int i = 0; i < component.Params.Input.Count; i++)
                     {
@@ -217,9 +221,8 @@ namespace QuickConnection
                 }
 
                 //Case Parameter
-                else if (obj is IGH_Param)
+                else if (obj is IGH_Param param)
                 {
-                    IGH_Param param = (IGH_Param)obj;
                     param.CreateAttributes();
 
                     if (!IsParamGeneral(param.GetType(), out Type dataType)) continue;
@@ -274,6 +277,8 @@ namespace QuickConnection
                         }
                     }
                 }
+
+                if (obj is IDisposable dis) dis.Dispose();
             }
             //Add to InputItems.
             foreach (var pair in inputRemap)
@@ -301,6 +306,10 @@ namespace QuickConnection
             //Add to TreeItems.
             treeItems.Sort();
             TreeItems = treeItems.ToArray();
+
+            Grasshopper.Instances.DocumentEditor.SetStatusBarEvent(new GH_RuntimeMessage(
+                $"Quick Connection read {createCount} obejcts successfully."
+                , GH_RuntimeMessageLevel.Remark));
         }
 
         private static bool IsParamGeneral(Type type, out Type dataType)

@@ -10,7 +10,7 @@ namespace QuickConnection
         public override string Name => "Quick Connection";
 
         //Return a 24x24 pixel bitmap to represent this GHA library.
-        public override Bitmap Icon => null;
+        public override Bitmap Icon => Properties.Resources.QuickwireIcon_24;
 
         //Return a short string describing the purpose of this GHA library.
         public override string Description => "Fast connecting wires.";
@@ -23,6 +23,6 @@ namespace QuickConnection
         //Return a string representing your preferred contact details.
         public override string AuthorContact => "1123993881@qq.com";
 
-        public override string Version => "1.0.6";
+        public override string Version => "1.0.7";
     }
 }

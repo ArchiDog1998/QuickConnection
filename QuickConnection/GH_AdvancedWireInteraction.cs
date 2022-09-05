@@ -70,7 +70,6 @@ namespace QuickConnection
                     _fromInputInfo.SetValue(this, parant.Params.Input.Contains(Source));
                 }
             }
-
         }
 
         public override GH_ObjectResponse RespondToMouseMove(GH_Canvas sender, GH_CanvasMouseEvent e)

@@ -82,19 +82,6 @@ namespace QuickConnection
                 MessageBox.Show(ex.Message, "Json Library Save Failed");
             }
         }
-
-        internal static void RemoveAllQuickwireSettings()
-        {
-            if (File.Exists(_location))
-                File.Delete(_location);
-            StaticCreateObjectItems = new CreateObjectItems();
-        }
-
-        internal static void ResetToDefaultQuiceWIreSettings(bool isCoreOnly)
-        {
-            StaticCreateObjectItems.CreateDefaultStyle(isCoreOnly);
-            SaveToJson();
-        }
         #endregion
         public override GH_LoadingInstruction PriorityLoad()
         {
@@ -218,24 +205,29 @@ namespace QuickConnection
 
             #region Add three function for set the default library.
 
-            major.DropDownItems.Add(new ToolStripMenuItem("Set Core Only Library", null, (sender, e) => new Thread(() => 
+            major.DropDownItems.Add(new ToolStripMenuItem("Set Core Only Library", null, (sender, e) => 
             { 
                 StaticCreateObjectItems.CreateDefaultStyle(true);
                 SaveToJson();
-            }).Start()) { ToolTipText = "Click to set the default quick connection library about all core document objects."});
+            }) { ToolTipText = "Click to set the quick connection library to all core document objects."});
 
-            major.DropDownItems.Add(new ToolStripMenuItem("Set All Component's Library", null, (sender, e) => new Thread(() =>
+            major.DropDownItems.Add(new ToolStripMenuItem("Set All Library", null, (sender, e) => 
             {
                 StaticCreateObjectItems.CreateDefaultStyle(false);
                 SaveToJson();
-            }).Start()) { ToolTipText = "Click to set the default quick connection library about all document objects." });
+            }) { ToolTipText = "Click to set the quick connection library to all document objects." });
 
-            major.DropDownItems.Add(new ToolStripMenuItem("Load Default Library", null, (sender, e) => new Thread(() =>
+            major.DropDownItems.Add(new ToolStripMenuItem("Set Selected Library", null, (sender, e) =>
+            {
+                new SelectAssemblyWindow().Show();
+            })
+            { ToolTipText = "Click to set quick connection library to the document objects from selected gha file." });
+
+            major.DropDownItems.Add(new ToolStripMenuItem("Load Default Library", null, (sender, e) => 
             {
                 LoadFromLocal();
                 SaveToJson();
-            }).Start())
-            { ToolTipText = "Click to load default quick connection library from gha file." });
+            }) { ToolTipText = "Click to load default quick connection library from this plugins' file." });
 
             major.DropDownItems.Add(new ToolStripMenuItem("Clear Library", null, (sender, e) => 
             { 

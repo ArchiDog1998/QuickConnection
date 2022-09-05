@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:QuickConnection" x:Name="Father"
-        mc:Ignorable="d" Topmost="True" WindowStartupLocation="CenterScreen"
+        mc:Ignorable="d" Topmost="True" WindowStartupLocation="CenterScreen" WindowStyle="ToolWindow"
         Title="Quick Connection Editor" Height="400" Width="300" MinWidth="220" MinHeight="150">
 
     <Window.Resources>
