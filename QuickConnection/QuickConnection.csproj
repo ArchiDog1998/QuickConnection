@@ -52,7 +52,7 @@
   </PropertyGroup>
   
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="Copy &quot;$(TargetPath)&quot; &quot;C:\Users\ArchiTed\AppData\Roaming\Grasshopper\Libraries\$(ProjectName).gha&quot;" />
+    <Exec Command="Copy &quot;$(TargetPath)&quot; &quot;%APPDATA%\Grasshopper\Libraries\$(ProjectName).gha&quot;" />
   </Target>
 
 </Project>

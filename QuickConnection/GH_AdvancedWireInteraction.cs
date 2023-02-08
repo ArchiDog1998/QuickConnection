@@ -50,7 +50,7 @@ namespace QuickConnection
         private GH_PanInteraction _panInteraction;
         private Point _panControlLocation;
 
-        private Stopwatch _timer;
+        private DateTime _time;
         private bool _isFirstUp = true;
         public GH_AdvancedWireInteraction(GH_Canvas iParent, GH_CanvasMouseEvent mEvent, IGH_Param Source)
             : base(iParent, mEvent, Source)
@@ -60,8 +60,7 @@ namespace QuickConnection
                 _pointInfo.SetValue(this, _lastCanvasLoacation);
                 iParent.Refresh();
             }
-            _timer = new Stopwatch();
-            _timer.Start();
+            _time = DateTime.Now;
 
             if (Source.GetType().FullName.Contains("Grasshopper.Kernel.Components.GH_PlaceholderParameter") && !Source.Attributes.IsTopLevel)
             {
@@ -160,19 +159,18 @@ namespace QuickConnection
 
             IGH_Param source = (IGH_Param)_sourceInfo.GetValue(this);
             bool notHoldKeys = Control.ModifierKeys == Keys.None;
-            bool inTime = _isFirstUp && _timer.ElapsedMilliseconds < QuickConnectionAssemblyLoad.QuickConnectionMaxWaitTime;
+            bool inTime = _isFirstUp && (DateTime.Now - _time).TotalMilliseconds < QuickConnectionAssemblyLoad.QuickConnectionMaxWaitTime;
             _isFirstUp = false;
 
             if (e.Button != MouseButtons.Left)
             {
-                if (_panInteraction != null && GH_AdvancedWireInteraction.DistanceTo(e.ControlLocation, _panControlLocation) < 10)
+                if (_panInteraction != null && DistanceTo(e.ControlLocation, _panControlLocation) < 10)
                 {
                     Instances.ActiveCanvas.ActiveInteraction = null;
                 }
 
                 _panInteraction = null;
                 return GH_ObjectResponse.Ignore;
-
             }
 
             //If the wire is connected than return.
@@ -192,7 +190,7 @@ namespace QuickConnection
             }
 
             //Make Click To Enable Interaction.
-            else if ((inTime || DistanceTo(e.CanvasLocation, CanvasPointDown) < 10))
+            else if (inTime || DistanceTo(e.CanvasLocation, CanvasPointDown) < 10)
             {
                 return GH_ObjectResponse.Ignore;
             }
