@@ -3,26 +3,25 @@ using Grasshopper.Kernel;
 using System;
 using System.Drawing;
 
-namespace QuickConnection
+namespace QuickConnection;
+
+public class QuickConnectionInfo : GH_AssemblyInfo
 {
-    public class QuickConnectionInfo : GH_AssemblyInfo
-    {
-        public override string Name => "Quick Connection";
+    public override string Name => "Quick Connection";
 
-        //Return a 24x24 pixel bitmap to represent this GHA library.
-        public override Bitmap Icon => Properties.Resources.QuickwireIcon_24;
+    //Return a 24x24 pixel bitmap to represent this GHA library.
+    public override Bitmap Icon => Properties.Resources.QuickwireIcon_24;
 
-        //Return a short string describing the purpose of this GHA library.
-        public override string Description => "Fast connecting wires.";
+    //Return a short string describing the purpose of this GHA library.
+    public override string Description => "Fast connecting wires.";
 
-        public override Guid Id => new Guid("6C0DDB78-4484-4481-996A-60CF4D9B90CE");
+    public override Guid Id => new("6C0DDB78-4484-4481-996A-60CF4D9B90CE");
 
-        //Return a string identifying you or your company.
-        public override string AuthorName => "秋水";
+    //Return a string identifying you or your company.
+    public override string AuthorName => "秋水";
 
-        //Return a string representing your preferred contact details.
-        public override string AuthorContact => "1123993881@qq.com";
+    //Return a string representing your preferred contact details.
+    public override string AuthorContact => "1123993881@qq.com";
 
-        public override string Version => "1.0.7";
-    }
+    public override string Version => "1.0.7";
 }

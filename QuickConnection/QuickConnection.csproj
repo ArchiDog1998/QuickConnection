@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 	
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFrameworks>net7.0-windows</TargetFrameworks>
     <Version>1.0.7</Version>
     <Title>QuickConnection</Title>
     <Description>Description of QuickConnection</Description>
@@ -12,15 +12,12 @@
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageIcon>QuickwireIcon_128.png</PackageIcon>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<LangVersion>latest</LangVersion>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="6.12.19029.6381" IncludeAssets="compile;build" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Extensions" />
+    <PackageReference Include="Grasshopper" Version="8.1.*" />
+    <PackageReference Include="SimpleGrasshopper" Version="1.2.8" />
   </ItemGroup>
   
   <ItemGroup>
