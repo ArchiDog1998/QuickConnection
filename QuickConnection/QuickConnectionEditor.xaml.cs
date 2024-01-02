@@ -131,7 +131,7 @@ public partial class QuickConnectionEditor : Window
         else
         {
             Apply();
-            QuickConnectionAssemblyLoad.SaveToJson();
+            SimpleAssemblyPriority.SaveToJson();
         }
         base.OnClosed(e);
     }

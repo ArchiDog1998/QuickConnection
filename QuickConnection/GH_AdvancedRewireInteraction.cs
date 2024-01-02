@@ -29,6 +29,44 @@ internal class GH_AdvancedRewireInteraction : GH_RewireInteraction
     private readonly Stopwatch _timer;
     private bool _isFirstUp = true;
 
+
+    public new bool IsValid
+    {
+        get
+        {
+            IGH_Param param = (IGH_Param)_sourceInfo.GetValue(this);
+            if (param.GetType().FullName.Contains("Grasshopper.Kernel.Components.GH_PlaceholderParameter")
+                && !param.Attributes.IsTopLevel && param.Attributes.GetTopLevel.DocObject is GH_Component com)
+            {
+                bool input = com.Params.Input.Contains(param);
+                _inputInfo.SetValue(this, input);
+
+                List<IGH_Param> parameters = [];
+                List<PointF> grips = [];
+                if (!input)
+                {
+                    foreach (IGH_Param recipient in param.Recipients)
+                    {
+                        parameters.Add(recipient);
+                        grips.Add(recipient.Attributes.InputGrip);
+                    }
+                }
+                else
+                {
+                    foreach (IGH_Param source in param.Sources)
+                    {
+                        parameters.Add(source);
+                        grips.Add(source.Attributes.OutputGrip);
+                    }
+                }
+                _paramsInfo.SetValue(this, parameters);
+                _GripInfo.SetValue(this, grips);
+            }
+            return ((List<IGH_Param>)_paramInfo.GetValue(this)).Count > 0;
+        }
+    }
+
+
     public GH_AdvancedRewireInteraction(GH_Canvas iParent, GH_CanvasMouseEvent mEvent, IGH_Param Source)
         :base(iParent, mEvent, Source)
     {
@@ -95,7 +133,7 @@ internal class GH_AdvancedRewireInteraction : GH_RewireInteraction
             return GH_ObjectResponse.Release;
         }
 
-        bool inTime = _isFirstUp && _timer.ElapsedMilliseconds < QuickConnectionAssemblyLoad.QuickConnectionMaxWaitTime;
+        bool inTime = _isFirstUp && _timer.ElapsedMilliseconds < SimpleAssemblyPriority.QuickConnectionMaxWaitTime;
         _isFirstUp = false;
 
         GH_Document document = base.Canvas.Document;
@@ -174,38 +212,5 @@ internal class GH_AdvancedRewireInteraction : GH_RewireInteraction
         }
         else
             return RespondToMouseUp(sender, e);
-    }
-
-    public bool get_IsValid()
-    {
-        IGH_Param param = (IGH_Param)_sourceInfo.GetValue(this);
-        if (param.GetType().FullName.Contains("Grasshopper.Kernel.Components.GH_PlaceholderParameter")
-            && !param.Attributes.IsTopLevel && param.Attributes.GetTopLevel.DocObject is GH_Component com)
-        {
-            bool input = com.Params.Input.Contains(param);
-            _inputInfo.SetValue(this, input);
-
-            List<IGH_Param> parameters = [];
-            List<PointF> grips = [];
-            if (!input)
-            {
-                foreach (IGH_Param recipient in param.Recipients)
-                {
-                    parameters.Add(recipient);
-                    grips.Add(recipient.Attributes.InputGrip);
-                }
-            }
-            else
-            {
-                foreach (IGH_Param source in param.Sources)
-                {
-                    parameters.Add(source);
-                    grips.Add(source.Attributes.OutputGrip);
-                }
-            }
-            _paramsInfo.SetValue(this, parameters);
-            _GripInfo.SetValue(this, grips);
-        }
-        return ((List<IGH_Param>)_paramInfo.GetValue(this)).Count > 0;
     }
 }

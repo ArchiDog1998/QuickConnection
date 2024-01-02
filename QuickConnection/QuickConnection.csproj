@@ -11,13 +11,13 @@
     <PackageLicenseFile>D:\OneDrive - stu.zafu.edu.cn\Rhino Share Files\07 Grasshopper Developments 蚱蜢开发\# 项目案例\QuickConnection\LICENSE</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageIcon>QuickwireIcon_128.png</PackageIcon>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<LangVersion>latest</LangVersion>
   </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="Grasshopper" Version="8.1.*" />
     <PackageReference Include="SimpleGrasshopper" Version="1.2.8" />
+	  <EmbeddedResource Include="Resources\*.png" />
   </ItemGroup>
   
   <ItemGroup>
@@ -43,13 +43,8 @@
   </ItemGroup>
   
   <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
-    <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
+    <StartProgram>C:\Program Files\Rhino 8\System\Rhino.exe</StartProgram>
     <StartArguments></StartArguments>
     <StartAction>Program</StartAction>
   </PropertyGroup>
-  
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="Copy &quot;$(TargetPath)&quot; &quot;%APPDATA%\Grasshopper\Libraries\$(ProjectName).gha&quot;" />
-  </Target>
-
 </Project>

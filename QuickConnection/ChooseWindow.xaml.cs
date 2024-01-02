@@ -34,11 +34,11 @@ public partial class ChooseWindow : Window
         SortedList<Guid, CreateObjectItem[]> dict = [];
         if (isInput)
         {
-            dict = QuickConnectionAssemblyLoad.StaticCreateObjectItems.InputItems;
+            dict = SimpleAssemblyPriority.StaticCreateObjectItems.InputItems;
         }
         else
         {
-            dict = QuickConnectionAssemblyLoad.StaticCreateObjectItems.OutputItems;
+            dict = SimpleAssemblyPriority.StaticCreateObjectItems.OutputItems;
         }
 
         //Change Guid.
@@ -129,17 +129,17 @@ public partial class ChooseWindow : Window
 
                 ListTitle.MouseRightButtonUp += (sender, e) =>
                 {
-                    ObservableCollection<CreateObjectItem> structureLists = new ObservableCollection<CreateObjectItem>(QuickConnectionAssemblyLoad.StaticCreateObjectItems.ListItems);
+                    ObservableCollection<CreateObjectItem> structureLists = new ObservableCollection<CreateObjectItem>(SimpleAssemblyPriority.StaticCreateObjectItems.ListItems);
 
                     new QuickConnectionEditor(isInput, proxy.Icon, "List", structureLists, (par) => par.Access == GH_ParamAccess.list && par is Param_GenericObject,
                         (arr, isIn) =>
                         {
-                            QuickConnectionAssemblyLoad.StaticCreateObjectItems.ListItems = arr;
+                            SimpleAssemblyPriority.StaticCreateObjectItems.ListItems = arr;
 
                         }).Show();
                 };
                 ListTitle.Header = image;
-                ListList.ItemsSource = QuickConnectionAssemblyLoad.StaticCreateObjectItems.ListItems;
+                ListList.ItemsSource = SimpleAssemblyPriority.StaticCreateObjectItems.ListItems;
 
             }
             else ListTitle.Visibility = Visibility.Collapsed;
@@ -150,16 +150,16 @@ public partial class ChooseWindow : Window
                 Image image = CreateHeader(tree.Icon_24x24);
                 TreeTitle.MouseRightButtonUp += (sender, e) =>
                 {
-                    ObservableCollection<CreateObjectItem> structureLists = new ObservableCollection<CreateObjectItem>(QuickConnectionAssemblyLoad.StaticCreateObjectItems.TreeItems);
+                    ObservableCollection<CreateObjectItem> structureLists = new ObservableCollection<CreateObjectItem>(SimpleAssemblyPriority.StaticCreateObjectItems.TreeItems);
                     new QuickConnectionEditor(isInput, tree.Icon_24x24, "Tree", structureLists, (par) => par.Access == GH_ParamAccess.tree && par is Param_GenericObject,
                     (arr, isIn) =>
                     {
-                        QuickConnectionAssemblyLoad.StaticCreateObjectItems.TreeItems = arr;
+                        SimpleAssemblyPriority.StaticCreateObjectItems.TreeItems = arr;
 
                     }).Show();
                 };
                 TreeTitle.Header = image;
-                TreeList.ItemsSource = QuickConnectionAssemblyLoad.StaticCreateObjectItems.TreeItems;
+                TreeList.ItemsSource = SimpleAssemblyPriority.StaticCreateObjectItems.TreeItems;
             }
             else TreeTitle.Visibility = Visibility.Collapsed;
         } else
@@ -311,9 +311,9 @@ public partial class ChooseWindow : Window
             (arr, isIn) =>
             {
                 if (isIn)
-                    QuickConnectionAssemblyLoad.StaticCreateObjectItems.InputItems[guid] = arr;
+                    SimpleAssemblyPriority.StaticCreateObjectItems.InputItems[guid] = arr;
                 else
-                    QuickConnectionAssemblyLoad.StaticCreateObjectItems.OutputItems[guid] = arr;
+                    SimpleAssemblyPriority.StaticCreateObjectItems.OutputItems[guid] = arr;
 
             }).Show();
     }
@@ -341,8 +341,8 @@ public partial class ChooseWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
-        QuickConnectionAssemblyLoad.QuickConnectionWindowWidth = Width;
-        QuickConnectionAssemblyLoad.QuickConnectionWindowHeight = Height;
+        SimpleAssemblyPriority.QuickConnectionWindowWidth = Width;
+        SimpleAssemblyPriority.QuickConnectionWindowHeight = Height;
         GH_AdvancedWireInteraction._lastCanvasLoacation = PointF.Empty;
         base.OnClosed(e);
     }

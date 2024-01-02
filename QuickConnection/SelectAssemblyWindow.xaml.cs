@@ -36,8 +36,8 @@ namespace QuickConnection
                     if(obj is not GH_AssemblyInfo info) continue;
                     ids.Add(info.Id);
                 }
-                QuickConnectionAssemblyLoad.StaticCreateObjectItems.CreateDefaultStyle(false, [.. ids]);
-                QuickConnectionAssemblyLoad.SaveToJson();
+                SimpleAssemblyPriority.StaticCreateObjectItems.CreateDefaultStyle(false, [.. ids]);
+                SimpleAssemblyPriority.SaveToJson();
             }
 
             this.Close();

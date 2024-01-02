@@ -95,7 +95,7 @@ public class GH_AdvancedWireInteraction : GH_WireInteraction
         //Closest Attribute.
         iGH_Attributes ??= GetRightAttribute(document, e, fromInput);
 
-        if (QuickConnectionAssemblyLoad.CantWireEasily) base.RespondToMouseMove(sender, e);
+        if (SimpleAssemblyPriority.CantWireEasily) base.RespondToMouseMove(sender, e);
 
 
         if (iGH_Attributes == null)
@@ -154,7 +154,7 @@ public class GH_AdvancedWireInteraction : GH_WireInteraction
 
         IGH_Param source = (IGH_Param)_sourceInfo.GetValue(this);
         bool notHoldKeys = Control.ModifierKeys == Keys.None;
-        bool inTime = _isFirstUp && (DateTime.Now - _time).TotalMilliseconds < QuickConnectionAssemblyLoad.QuickConnectionMaxWaitTime;
+        bool inTime = _isFirstUp && (DateTime.Now - _time).TotalMilliseconds < SimpleAssemblyPriority.QuickConnectionMaxWaitTime;
         _isFirstUp = false;
 
         if (e.Button != MouseButtons.Left)
@@ -172,7 +172,7 @@ public class GH_AdvancedWireInteraction : GH_WireInteraction
         else  if (((IGH_Param)_targetInfo.GetValue(this)) != null)
         {
             _click = e.CanvasLocation;
-            if (QuickConnectionAssemblyLoad.CantWireEasily)
+            if (SimpleAssemblyPriority.CantWireEasily)
             {
                 return base.RespondToMouseUp(sender, e);
             }
@@ -199,8 +199,8 @@ public class GH_AdvancedWireInteraction : GH_WireInteraction
                 WindowStartupLocation = System.Windows.WindowStartupLocation.Manual,
                 Left = location.X / ScreenScale,
                 Top = location.Y / ScreenScale,
-                Width = QuickConnectionAssemblyLoad.QuickConnectionWindowWidth,
-                Height = QuickConnectionAssemblyLoad.QuickConnectionWindowHeight,
+                Width = SimpleAssemblyPriority.QuickConnectionWindowWidth,
+                Height = SimpleAssemblyPriority.QuickConnectionWindowHeight,
             }.Show();
 
             _lastCanvasLoacation = e.CanvasLocation;
@@ -212,7 +212,7 @@ public class GH_AdvancedWireInteraction : GH_WireInteraction
 
     internal static IGH_Attributes GetRightAttribute(GH_Document document, GH_CanvasMouseEvent e, bool input)
     {
-        if (!QuickConnectionAssemblyLoad.UseFuzzyConnection) return null;
+        if (!SimpleAssemblyPriority.UseFuzzyConnection) return null;
         IGH_Attributes iGH_Attributes = null;
 
         IGH_Attributes attr = document.FindAttribute(e.CanvasLocation, true);
