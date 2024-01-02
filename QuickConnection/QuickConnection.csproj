@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 	
   <PropertyGroup>
-    <TargetFrameworks>net7.0-windows</TargetFrameworks>
-    <Version>1.0.7</Version>
+    <TargetFrameworks>net48</TargetFrameworks>
+    <Version>1.1.0</Version>
     <Title>QuickConnection</Title>
     <Description>Description of QuickConnection</Description>
     <TargetExt>.gha</TargetExt>
@@ -15,7 +15,6 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="8.1.*" />
     <PackageReference Include="SimpleGrasshopper" Version="1.2.8" />
 	  <EmbeddedResource Include="Resources\*.png" />
   </ItemGroup>
