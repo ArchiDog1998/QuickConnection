@@ -1,21 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 	
   <PropertyGroup>
-    <TargetFrameworks>net48</TargetFrameworks>
+    <TargetFrameworks>net7.0-windows</TargetFrameworks>
     <Version>1.1.0</Version>
     <Title>QuickConnection</Title>
     <Description>Description of QuickConnection</Description>
     <TargetExt>.gha</TargetExt>
     <UseWpf>true</UseWpf>
     <UseWindowsForms>true</UseWindowsForms>
-    <PackageLicenseFile>D:\OneDrive - stu.zafu.edu.cn\Rhino Share Files\07 Grasshopper Developments 蚱蜢开发\# 项目案例\QuickConnection\LICENSE</PackageLicenseFile>
+    <PackageLicenseFile>.\LICENSE</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageIcon>QuickwireIcon_128.png</PackageIcon>
 	<LangVersion>latest</LangVersion>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="SimpleGrasshopper" Version="1.2.8" />
+    <PackageReference Include="Grasshopper" Version="8.0.23304.9001" />
+    <PackageReference Include="SimpleGrasshopper" Version="1.4.3" />
 	  <EmbeddedResource Include="Resources\*.png" />
   </ItemGroup>
   

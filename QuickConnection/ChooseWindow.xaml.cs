@@ -269,26 +269,6 @@ public partial class ChooseWindow : Window
         this.Close();
     }
 
-    //internal static bool IsPersistentParam(Type type, out Type dataType)
-    //{
-    //    dataType = null;
-    //    if (type == null)
-    //    {
-    //        return false;
-    //    }
-    //    else if (type.IsGenericType)
-    //    {
-    //        if (type.GetGenericTypeDefinition() == typeof(GH_PersistentParam<>))
-    //        {
-    //            dataType = type.GenericTypeArguments[0];
-    //            return true;
-    //        }
-    //        else if (type.GetGenericTypeDefinition() == typeof(GH_Param<>))
-    //            return false;
-    //    }
-    //    return IsPersistentParam(type.BaseType, out dataType);
-    //}
-
     private static void Menu_EditItemRightClicked(CreateObjectItem[] items, Guid guid, IGH_Param param, bool isInput)
     {
 

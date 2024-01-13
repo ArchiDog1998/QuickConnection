@@ -1,6 +1,7 @@
 ﻿using Grasshopper;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Special;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -244,12 +245,23 @@ public partial class QuickConnectionEditor : Window
         else
         {
             IGH_DocumentObject obj = param.Attributes.GetTopLevel.DocObject;
-            if (obj is not IGH_Component) return;
-            IGH_Component com = (GH_Component)obj;
+            if (obj is not IGH_Component com) return;
+
+            var guid = com.ComponentGuid;
+            if (com is GH_Cluster)
+            {
+                foreach(var proxy in Instances.ComponentServer.ObjectProxies)
+                {
+                    if(proxy.Desc.Name != com.Name) continue;
+                    if(proxy.Desc.SubCategory != com.SubCategory) continue;
+                    if(proxy.Desc.Category != com.Category) continue;
+                    guid = proxy.LibraryGuid;
+                    break;
+                }
+            }
 
             int index = _isInput ? com.Params.Output.IndexOf(param) : com.Params.Input.IndexOf(param);
-            item = new CreateObjectItem(com.ComponentGuid, (ushort)index, null, _isInput);
-
+            item = new CreateObjectItem(guid, (ushort)index, null, _isInput);
         }
         ((ObservableCollection<CreateObjectItem>)DataContext).Add(item);
         dataGrid.SelectedIndex = ((ObservableCollection<CreateObjectItem>)DataContext).Count - 1;

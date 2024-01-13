@@ -19,6 +19,8 @@ public class CreateObjectItem : IComparable<CreateObjectItem>
     public string Name { get; } = "Not Found";
     public bool IsInput { get; }
 
+    private readonly IGH_ObjectProxy _proxy;
+
     private readonly bool isCoreLibrary = false;
     public CreateObjectItem(Guid guid, ushort index, string init, bool isInput)
     {
@@ -27,20 +29,34 @@ public class CreateObjectItem : IComparable<CreateObjectItem>
         Index = index;
         IsInput = isInput;
 
-        IGH_ObjectProxy proxy = Grasshopper.Instances.ComponentServer.EmitObjectProxy(guid);
-        if(proxy == null) return;
+        _proxy = Grasshopper.Instances.ComponentServer.EmitObjectProxy(guid);
+        if(_proxy == null)
+        {
+            foreach (var proxy in Grasshopper.Instances.ComponentServer.ObjectProxies)
+            {
+                if(proxy.LibraryGuid == ObjectGuid)
+                {
+                    _proxy = proxy;
+                    break;
+                }
+            }
+        }
 
         foreach (var assembly in Grasshopper.Instances.ComponentServer.Libraries)
         {
-            if (proxy.LibraryGuid == assembly.Id)
+
+            if (_proxy.LibraryGuid == assembly.Id)
             {
                 isCoreLibrary = assembly.IsCoreLibrary;
                 break;
             }
         }
-        Icon = proxy.Icon;
-        Name = proxy.Desc.Name;
-        ShowName = $"{proxy.Desc.Name}[{index}]\n\nInitString: {init}\n\n" + proxy.Desc.Description;
+
+        if (_proxy == null) return;
+
+        Icon = _proxy.Icon;
+        Name = _proxy.Desc.Name;
+        ShowName = $"{_proxy.Desc.Name}[{index}]\n\nInitString: {init}\n\n" + _proxy.Desc.Description;
     }
 
     public CreateObjectItem(CreateObjectItemSave save, bool isInput):this(save.ObjectGuid, save.Index, save.InitString, isInput)
@@ -50,7 +66,7 @@ public class CreateObjectItem : IComparable<CreateObjectItem>
 
     public IGH_DocumentObject CreateObject(IGH_Param param, PointF objCenter, Action<IGH_DocumentObject> action = null)
     {
-        IGH_DocumentObject obj = Grasshopper.Instances.ComponentServer.EmitObject(ObjectGuid);
+        IGH_DocumentObject obj = _proxy?.CreateInstance();
         if (obj == null) return null;
 
         action?.Invoke(obj);
