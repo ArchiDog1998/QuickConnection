@@ -5,10 +5,12 @@ using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Parameters.Hints;
 using Grasshopper.Kernel.Special;
 using Grasshopper.Kernel.Types;
+using SimpleGrasshopper.Util;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -24,6 +26,64 @@ public partial class ChooseWindow : Window
 {
     private readonly IGH_Param _owner;
     private readonly PointF _position;
+
+    private static void ChangeParamId(Guid hintid, ref Guid guid)
+    {
+        if (hintid == new GH_ArcHint().HintID)
+            guid = new Param_Arc().ComponentGuid;
+        else if (hintid == new GH_BooleanHint_CS().HintID || hintid == new GH_BooleanHint_VB().HintID)
+            guid = new Param_Boolean().ComponentGuid;
+        else if (hintid == new GH_BoxHint().HintID)
+            guid = new Param_Box().ComponentGuid;
+        else if (hintid == new GH_BrepHint().HintID)
+            guid = new Param_Brep().ComponentGuid;
+        else if (hintid == new GH_CircleHint().HintID)
+            guid = new Param_Circle().ComponentGuid;
+        else if (hintid == new GH_ColorHint().HintID)
+            guid = new Param_Colour().ComponentGuid;
+        else if (hintid == new GH_ComplexHint().HintID)
+            guid = new Param_Complex().ComponentGuid;
+        else if (hintid == new GH_CurveHint().HintID)
+            guid = new Param_Curve().ComponentGuid;
+        else if (hintid == new GH_DateTimeHint().HintID)
+            guid = new Param_Time().ComponentGuid;
+        else if (hintid == new GH_DoubleHint_CS().HintID || hintid == new GH_DoubleHint_VB().HintID)
+            guid = new Param_Number().ComponentGuid;
+        else if (hintid == new GH_GeometryBaseHint().HintID)
+            guid = new Param_Geometry().ComponentGuid;
+        else if (hintid == new GH_GuidHint().HintID)
+            guid = new Param_Guid().ComponentGuid;
+        else if (hintid == new GH_IntegerHint_CS().HintID || hintid == new GH_IntegerHint_VB().HintID)
+            guid = new Param_Integer().ComponentGuid;
+        else if (hintid == new GH_IntervalHint().HintID)
+            guid = new Param_Interval().ComponentGuid;
+        else if (hintid == new GH_LineHint().HintID)
+            guid = new Param_Line().ComponentGuid;
+        else if (hintid == new GH_MeshHint().HintID)
+            guid = new Param_Mesh().ComponentGuid;
+        else if (hintid == new GH_NullHint().HintID)
+            guid = new Param_GenericObject().ComponentGuid;
+        else if (hintid == new GH_PlaneHint().HintID)
+            guid = new Param_Plane().ComponentGuid;
+        else if (hintid == new GH_Point3dHint().HintID)
+            guid = new Param_Point().ComponentGuid;
+        else if (hintid == new GH_PolylineHint().HintID)
+            guid = new Param_Curve().ComponentGuid;
+        else if (hintid == new GH_Rectangle3dHint().HintID)
+            guid = new Param_Rectangle().ComponentGuid;
+        else if (hintid == new GH_StringHint_CS().HintID || hintid == new GH_StringHint_VB().HintID)
+            guid = new Param_String().ComponentGuid;
+        else if (hintid == new GH_SubDHint().HintID)
+            guid = new Param_SubD().ComponentGuid;
+        else if (hintid == new GH_SurfaceHint().HintID)
+            guid = new Param_Surface().ComponentGuid;
+        else if (hintid == new GH_TransformHint().HintID)
+            guid = new Param_Transform().ComponentGuid;
+        else if (hintid == new GH_UVIntervalHint().HintID)
+            guid = new Param_Interval2D().ComponentGuid;
+        else if (hintid == new GH_Vector3dHint().HintID)
+            guid = new Param_Vector().ComponentGuid;
+    }
 
     public ChooseWindow(IGH_Param param, bool isInput, PointF pivot)
     {
@@ -42,66 +102,16 @@ public partial class ChooseWindow : Window
         }
 
         //Change Guid.
-        if (param is Param_ScriptVariable script && guid == new Param_ScriptVariable().ComponentGuid)
+        if (param is Param_ScriptVariable script)
         {
-            if (script.TypeHint != null)
-            {
-                if (script.TypeHint is GH_ArcHint)
-                    guid = new Param_Arc().ComponentGuid;
-                else if (script.TypeHint is GH_BooleanHint_CS || script.TypeHint is GH_BooleanHint_VB)
-                    guid = new Param_Boolean().ComponentGuid;
-                else if (script.TypeHint is GH_BoxHint)
-                    guid = new Param_Box().ComponentGuid;
-                else if (script.TypeHint is GH_BrepHint)
-                    guid = new Param_Brep().ComponentGuid;
-                else if (script.TypeHint is GH_CircleHint)
-                    guid = new Param_Circle().ComponentGuid;
-                else if (script.TypeHint is GH_ColorHint)
-                    guid = new Param_Colour().ComponentGuid;
-                else if (script.TypeHint is GH_ComplexHint)
-                    guid = new Param_Complex().ComponentGuid;
-                else if (script.TypeHint is GH_CurveHint)
-                    guid = new Param_Curve().ComponentGuid;
-                else if (script.TypeHint is GH_DateTimeHint)
-                    guid = new Param_Time().ComponentGuid;
-                else if (script.TypeHint is GH_DoubleHint_CS || script.TypeHint is GH_DoubleHint_VB)
-                    guid = new Param_Number().ComponentGuid;
-                else if (script.TypeHint is GH_GeometryBaseHint)
-                    guid = new Param_Geometry().ComponentGuid;
-                else if (script.TypeHint is GH_GuidHint)
-                    guid = new Param_Guid().ComponentGuid;
-                else if (script.TypeHint is GH_IntegerHint_CS || script.TypeHint is GH_IntegerHint_VB)
-                    guid = new Param_Integer().ComponentGuid;
-                else if (script.TypeHint is GH_IntervalHint)
-                    guid = new Param_Interval().ComponentGuid;
-                else if (script.TypeHint is GH_LineHint)
-                    guid = new Param_Line().ComponentGuid;
-                else if (script.TypeHint is GH_MeshHint)
-                    guid = new Param_Mesh().ComponentGuid;
-                else if (script.TypeHint is GH_NullHint)
-                    guid = new Param_GenericObject().ComponentGuid;
-                else if (script.TypeHint is GH_PlaneHint)
-                    guid = new Param_Plane().ComponentGuid;
-                else if (script.TypeHint is GH_Point3dHint)
-                    guid = new Param_Point().ComponentGuid;
-                else if (script.TypeHint is GH_PolylineHint)
-                    guid = new Param_Curve().ComponentGuid;
-                else if (script.TypeHint is GH_Rectangle3dHint)
-                    guid = new Param_Rectangle().ComponentGuid;
-                else if (script.TypeHint is GH_StringHint_CS || script.TypeHint is GH_StringHint_VB)
-                    guid = new Param_String().ComponentGuid;
-                else if (script.TypeHint is GH_SubD)
-                    guid = new Param_SubD().ComponentGuid;
-                else if (script.TypeHint is GH_SurfaceHint)
-                    guid = new Param_Surface().ComponentGuid;
-                else if (script.TypeHint is GH_TransformHint)
-                    guid = new Param_Transform().ComponentGuid;
-                else if (script.TypeHint is GH_UVIntervalHint)
-                    guid = new Param_Interval2D().ComponentGuid;
-                else if (script.TypeHint is GH_Vector3dHint)
-                    guid = new Param_Vector().ComponentGuid;
-            }
-
+            ChangeParamId(script.TypeHint.HintID, ref guid);
+        }
+        else if(param.GetType().FullName == "RhinoCodePluginGH.Parameters.ScriptVariableParam")
+        {
+            var converter = param.GetType().GetAllRuntimeFields().First(f => f.Name == "_converter").GetValue(param);
+            var mcId = converter.GetType().GetAllRuntimeProperties().First(p => p.Name == "Id").GetValue(converter);
+            var id = mcId.GetType().GetAllRuntimeProperties().First(p => p.Name == "Id").GetValue(mcId);
+            ChangeParamId((Guid)id, ref guid);
         }
 
         InitializeComponent();
@@ -211,7 +221,7 @@ public partial class ChooseWindow : Window
         if (guid == new Param_Rectangle().ComponentGuid || guid == new Param_Circle().ComponentGuid || guid == new Param_Arc().ComponentGuid || guid == new Param_Line().ComponentGuid
             || guid == new Param_Point().ComponentGuid || guid == new Param_Plane().ComponentGuid || guid == new Param_Vector().ComponentGuid
             || guid == new Param_Curve().ComponentGuid || guid == new Param_Surface().ComponentGuid || guid == new Param_Brep().ComponentGuid || guid == new Param_Group().ComponentGuid
-            || guid == new Param_Mesh().ComponentGuid || guid == new Guid("{89CD1A12-0007-4581-99BA-66578665E610}") || guid == new Param_Box().ComponentGuid 
+            || guid == new Param_Mesh().ComponentGuid || guid == new Param_SubD().ComponentGuid || guid == new Param_Box().ComponentGuid 
             || guid == new GH_GeometryCache().ComponentGuid)
         {
             Param_Geometry par = new Param_Geometry();
