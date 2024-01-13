@@ -2,7 +2,7 @@
 	
   <PropertyGroup>
     <TargetFrameworks>net7.0-windows</TargetFrameworks>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Title>QuickConnection</Title>
     <Description>Description of QuickConnection</Description>
     <TargetExt>.gha</TargetExt>
