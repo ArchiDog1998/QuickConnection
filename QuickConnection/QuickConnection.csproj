@@ -2,7 +2,7 @@
 	
   <PropertyGroup>
     <TargetFrameworks>net7.0-windows</TargetFrameworks>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <Title>QuickConnection</Title>
     <Description>Description of QuickConnection</Description>
     <TargetExt>.gha</TargetExt>
@@ -16,7 +16,7 @@
   
   <ItemGroup>
     <PackageReference Include="Grasshopper" Version="8.0.23304.9001" />
-    <PackageReference Include="SimpleGrasshopper" Version="1.4.3" />
+    <PackageReference Include="SimpleGrasshopper" Version="1.4.5" />
 	  <EmbeddedResource Include="Resources\*.png" />
   </ItemGroup>
   

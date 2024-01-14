@@ -1,0 +1,27 @@
+---
+name: QuickConnection
+version: 1.1.2
+authors:
+- 秋水
+description: >
+  Make wire connection much faster.
+  
+  
+  You can enable it on canvas toolbar.
+  
+  
+  When dragging the wire and release on blank, you'll be able to choose which object you want to connect with on the tab control.
+  
+  
+  You can also edit the items in tab control. Just right click the tab icon and you'll see an edit window. And your settings are under Settings Folder called quickwires.json.
+  
+  
+  Single click to wire is available.
+  
+  
+url: https://github.com/ArchiDog1998/QuickConnection
+keywords:
+- connection
+- wire
+- qiushui
+icon_url: https://raw.githubusercontent.com/ArchiDog1998/QuickConnection/master/QuickwireIcon_256.png
