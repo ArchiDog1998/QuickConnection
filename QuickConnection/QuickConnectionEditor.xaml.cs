@@ -248,7 +248,14 @@ public partial class QuickConnectionEditor : Window
             if (obj is not IGH_Component com) return;
 
             var guid = com.ComponentGuid;
-            if (com is GH_Cluster)
+            if (com is GH_Cluster || com.GetType().FullName 
+                is "GhPython.Component.PythonComponent_OBSOLETE"
+                or "GhPython.Component.ZuiPythonComponent"
+                or "ScriptComponents.Component_CSNET_Script"
+                or "ScriptComponents.Component_CSNET_Script_OBSOLETE"
+                or "ScriptComponents.Component_VBNET_Script"
+                or "ScriptComponents.Component_VBNET_Script_OBSOLETE"
+                or "RhinoCodePluginGH.Components.ScriptComponent")
             {
                 foreach(var proxy in Instances.ComponentServer.ObjectProxies)
                 {
